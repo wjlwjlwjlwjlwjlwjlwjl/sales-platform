@@ -1,0 +1,3 @@
+﻿  源.cpp
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\源.cpp(444,2): error C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\源.cpp(435,7): warning C4101: “str”: 未引用的局部变量
