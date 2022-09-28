@@ -1,6 +1,7 @@
 #include<iostream>
 #include<stdlib.h>
 #include<fstream>
+#include<iomanip>
 #include<windows.h>
 #include<stdio.h>
 #include "stdlib.h"
@@ -52,6 +53,31 @@ struct Order {
 	int cnt = 1;					//用于给订单分配ID
 };
 //定义订单的结构，存储订单的信息。
+struct Message
+{
+	char content[30] = { '0' };		//信息的内容
+	char time[20] = { '0' };		//信息的时间
+	User* people;					//发信息的人
+	Message* next;					//下一条信息
+};
+//定义消息的结构，用于创建拍卖群消息链表，存储聊天信息
+
+class Auction_group
+{
+public:
+	void Send_Message();			//发送信息
+	void Withdraw_Message();		//规定用户只能撤回2分钟内的信息
+	void Assign_Goods();			//根据拍卖结果分配商品并扣除相关金额
+	void Display_History_Message();	//显示历史信息
+	void Store_Message();			//存储信息
+	void Join_Group_Menu();			//拍卖群主页面
+	Message* start;					//信息头
+	Message* end;					//信息尾
+	Message* now;					//当前信息
+	User* nowuser;					//当前用户
+};
+
+
 
 class Users//:public Sellers,public Buyers
 {
@@ -81,7 +107,7 @@ public:
 
 
 
-class Administrator
+class Administrator:public Auction_group
 {
 public:
 	void all_goods();				//查看所有的商品
@@ -94,6 +120,7 @@ public:
 	void Updata_Goods();			//更新商品信息
 	void Achieve_Users_Message();	//获取用户信息
 	void Updata_Users();			//更新用户信息
+	void Delete_Message();			//删除信息
 	Good* a_goods_begin;				//商品开始
 	Good* a_goods_end;				//商品结束
 	User* a_users_begin;				//用户开始
@@ -102,11 +129,11 @@ public:
 	char a_password[21];
 };
 //管理员类。
-class Buyers
+class Buyers :public Users,public Auction_group
 {
 public:
 	void Search_all_Goods();			//查看商品列表
-	void Buy_Good();					//购买商品
+	void Bid_Good();					//购买商品
 	void Search_Good();					//搜索商品
 	void Good_Message();				//查看商品详细信息
 	void B_Histroy_Orders();			//查看历史订单
@@ -119,7 +146,7 @@ public:
 	Order* orders_message_buyer;		//读取订单信息
 };
 //买家类。
-class Sellers :public Users
+class Sellers :public Users,public Auction_group
 {
 public:
 	void List_Good(User* p);		//发布商品

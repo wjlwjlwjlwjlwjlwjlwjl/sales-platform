@@ -221,6 +221,7 @@ void Sellers::Remove_Good(User*p)
 	if (opt == 'y')
 	{
 		cout << "下架成功" << endl;
+		oldgood->g_state = '3';
 	}
 	else
 	{
@@ -296,6 +297,74 @@ void Sellers::Updata_Goods_Message()
 		p = p->next;
 	}
 	outfile.close();
+}
+
+void Buyers::Search_all_Goods()
+{
+	Get_Goods_Message();
+	cout << "********************************************************************************" << endl;
+	cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态" << endl;
+	Good* p = goods_message_buyer_begin;
+	while (p->next != NULL)
+	{
+		p = p->next;
+		if(p->g_state=='1'||p->g_state=='2')
+			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_number << "  " << p->g_seller << "  " << p->g_state << endl;
+	}
+	cout << "********************************************************************************" << endl;
+}
+void Buyers::Bid_Good()
+{
+
+}
+void Buyers::Search_Good()
+{
+
+}
+void Buyers::Good_Message()
+{
+
+}
+void Buyers::B_Histroy_Orders()
+{
+
+}
+void Buyers::Get_Goods_Message()
+{
+	int i = 0;
+	Good* p, * q;
+	p = new Good;
+	goods_message_buyer_begin = new Good;
+	goods_message_buyer_begin->next = NULL;
+	q = goods_message_buyer_begin;
+	ifstream infile("good.txt", ios::in | ios::binary);
+	if (!infile)
+	{
+		cout << "商品信息文件不存在！" << endl;
+		Sleep(2000);
+		system("cls");
+		exit(0);
+	}
+	while (!infile.eof())
+	{
+
+		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_number >> p->g_message >> p->g_seller >> p->g_state;
+		if (infile.fail())
+			break;
+		p->next = NULL;
+		q->next = p;
+		q = q->next;
+		p = new Good;
+		i++;
+	}
+	goods_message_buyer_end = q;
+	q->next = NULL;
+	infile.close();
+	delete p;
+}
+void Buyers::Get_Orders_Message()
+{
+
 }
 
 
@@ -595,7 +664,123 @@ void Administrator::Updata_Users()
 }
 
 
+void Auction_group::Send_Message()
+{
 
+}
+void Auction_group::Withdraw_Message()
+{
+
+}
+void Auction_group::Assign_Goods()
+{
+
+}
+void Auction_group::Display_History_Message()
+{
+	Message* p, * q;
+	p = new Message;
+	start = new Message;
+	end = new Message;
+	start->next = NULL;
+	q = start;
+	ifstream infile("message.txt", ios::in | ios::binary);
+	if (!infile)
+	{
+		cout << "信息文件不存在！" << endl;
+		Sleep(2000);
+		system("cls");
+		exit(0);
+	}
+	while (!infile.eof())
+	{
+		infile >> p->people->u_name >> p->time >> p->content;
+		if (infile.fail())
+			break;
+		p->next = NULL;
+		q->next = p;
+		q = q->next;
+		p = new Message;
+	}
+	end = q;
+	q->next = NULL;
+	infile.close();
+	delete p;
+}
+void Auction_group::Join_Group_Menu()
+{
+	system("cls");
+	cout << "			欢迎来到竞拍群聊！					  " << endl;
+	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与竞拍 4.退出群聊		 " << endl;
+	int opt = 0;
+	Buyers* buyer=new Buyers;
+	Sellers* seller = new Sellers;
+	seller->now_user = nowuser;
+	buyer->now_user = nowuser;
+	Display_History_Message();
+	Message* p = new Message;
+	p = start;
+	while (p->next != NULL)
+	{
+		p = p->next;
+		cout << std::left << setw(20) << p->people->u_name << ":" << p->content << std::right << setw(20) << p->time << endl;
+	}
+	while (true)
+	{
+		opt = 0;
+		cin >> opt;
+		while (cin.fail())
+		{
+			cerr << "输入错误，请重新输入:";
+			cin.clear();
+			cin.ignore();
+			cin >> opt;
+		}
+		switch (opt)
+		{
+		case 1:
+			p->next = new Message;
+			cin >> p->next->content;
+			p = p->next;
+			p->next = NULL;
+			cout << std::left << setw(20) << p->time << std::right << setw(20) << p->people->u_name << ":" << p->content << endl;
+			break;
+		case 2:Withdraw_Message(); break;
+		case 3:
+			if (nowuser->u_state == '1')
+				buyer->Bid_Good();
+			else
+				cout << "您没有参与竞拍的权限！" << endl;
+			break;
+		case 4:
+			if (nowuser->u_state == '1')
+				buyer->Buyers_Module();
+			else if (nowuser->u_state == '2')
+				seller->Sellers_Module();
+			else
+				cout << "输入指令错误！" << endl;
+			break;
+		default:cout << "输入指令错误！" << endl; break;
+		}
+	}
+}
+//nowuser需要赋值，时间
+void Auction_group::Store_Message()
+{
+	Message* p = new Message;
+	p = this->start;
+	fstream outfile("message.txt", ios::out);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
+		exit(0);
+	}
+	while (p != NULL)
+	{
+		outfile << p->people << " " << p->time << " " << p->content << endl;
+	}
+	outfile.close();
+}
 
 
 bool Administrator_Module()
@@ -682,7 +867,35 @@ void Users_Module(int st)
 //用户模块。
 void Users::Buyers_Module()
 {
-	
+	Buyers* user = new Buyers;
+	user->user_buyer = now_user;
+	user->nowuser = now_user;
+	system("cls");
+	cout << "================================================================================================" << endl;
+	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.查看历史订单 5.查看商品详细信息 6.返回用户主界面" << endl;
+	cout << "================================================================================================" << endl;
+	now_user->u_state = '1';
+	Update_message();
+	option = 0;
+	cout << "请输入操作：";
+	cin >> option;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> option;
+	}
+	switch (option)
+	{
+	case 1:user->Search_all_Goods(); break;
+	case 2:user->Join_Group_Menu(); break;
+	case 3:user->Search_Good(); break;
+	case 4:user->B_Histroy_Orders(); break;
+	case 5:user->Good_Message(); break;
+	case 6:User_Menu(); break;
+	default:cout << "输入指令错误！" << endl; break;
+	}
 }
 //买家模块。
 void Users::Sellers_Module()
@@ -690,10 +903,10 @@ void Users::Sellers_Module()
 	Sellers* user=new Sellers;
 	user->user_seller = now_user;
 	system("cls");
-	cout << "========================================================================================" << endl;
-	cout << "  1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.返回用户主界面" << endl;
-	cout << "========================================================================================" << endl;
-	now_user->u_state = '0';
+	cout << "=======================================================================================================" << endl;
+	cout << "  1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.加入竞拍群聊 7.返回用户主界面" << endl;
+	cout << "=======================================================================================================" << endl;
+	now_user->u_state = '2';
 	Update_message();
 	option = 0;
 	cout << "请输入操作：";
@@ -712,24 +925,12 @@ void Users::Sellers_Module()
 	case 3:user->Change_Good_Message(); break;
 	case 4:user->Remove_Good(now_user); break;
 	case 5:user->S_Histroy_Orders(); break;
-	case 6:User_Menu(); break;
+	case 6:user->Join_Group_Menu(); break;
+	case 7:User_Menu(); break;
 	default:cout << "输入指令错误！" << endl; break;
 	}
 }
 //卖家模块。
-
-
-
-
-
-
-
-//主页面菜单。
-void Bid_results()
-{
-
-}
-//竞拍结果。
 void Users::Information_Module()
 {
 	system("cls");
@@ -746,6 +947,7 @@ void Users::Information_Module()
 		cin.ignore();
 		cin >> opt;
 	}
+	//Get_Users_Message();
 	switch (opt)
 	{
 	case 1:Search_message(); break;
@@ -756,6 +958,9 @@ void Users::Information_Module()
 	}
 }
 //用户模块函数
+
+
+
 void Users::User_sign_up()
 {
 	Get_Users_Message();
@@ -888,7 +1093,7 @@ bool Users::User_login()
 		cout << "* * * 密码错误！* * *" << endl;
 		return false;
 	}
-	delete p, q;
+	delete p;
 }
 void Users::User_Menu()
 {
@@ -963,7 +1168,7 @@ void Users::Change_name()
 	l:
 	cout << "请输入新的用户名：";
 	cin >> name;
-	Get_Users_Message();
+	//Get_Users_Message();
 	User* a;
 	a = users_begin;
 	while (a->next != NULL)
@@ -999,7 +1204,6 @@ void Users::Change_password()
 void Users::Update_message()
 {
 	User* p = new User;
-	Get_Users_Message();
 	p = this->users_begin->next;
 	fstream outfile("user.txt", ios::out);
 	if (!outfile)
@@ -1081,44 +1285,3 @@ int main() {
 
 
 
-
-/*void Sellers::Get_Goods_Message()
-{
-	int i = 0;
-	Good* p, * q;
-	p = new Good;
-	goods_message_seller_begin = new Good;
-	goods_message_seller_begin->next = NULL;
-	q = goods_message_seller_begin;
-	ifstream infile("good.txt", ios::in | ios::binary);
-	if (!infile)
-	{
-		cout << "商品信息文件不存在！" << endl;
-		Sleep(2000);
-		system("cls");
-		exit(0);
-	}
-	while (!infile.eof())
-	{
-
-		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_number >> p->g_message >> p->g_seller >> p->g_state;
-		if (infile.fail())
-			break;
-		p->next = NULL;
-		q->next = p;
-		q = q->next;
-		p = new Good;
-		i++;
-	}
-	goods_message_seller_end = q;
-	if (i == 0)
-	{
-		goods_message_seller_end->g_id[1] = '0';
-		goods_message_seller_end->g_id[2] = '0';
-		goods_message_seller_end->g_id[3] = '0';
-	}
-	goods_message_seller_end->cnt = (goods_message_seller_end->g_id[1] - '0') * 100 + (goods_message_seller_end->g_id[2] - '0') * 10 + (goods_message_seller_end->g_id[3] - '0');
-	q->next = NULL;
-	infile.close();
-	delete p;
-}*/
