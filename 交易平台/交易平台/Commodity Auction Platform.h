@@ -9,10 +9,8 @@
 #include<graphics.h>
 #include<conio.h>
 #include<map>
+#include<time.h>
 using namespace std;
-class Users;
-class Sellers;
-class Buyers;
 int option;
 struct User {
 	char u_state = '1';				//用户的状态
@@ -56,8 +54,8 @@ struct Order {
 struct Message
 {
 	char content[30] = { '0' };		//信息的内容
-	char time[20] = { '0' };		//信息的时间
-	User* people;					//发信息的人
+	char nowtime[20] = { '0' };		//信息的时间
+	char name[11] = { '0' };		//发信息的人
 	Message* next;					//下一条信息
 };
 //定义消息的结构，用于创建拍卖群消息链表，存储聊天信息
@@ -164,3 +162,14 @@ public:
 	Order* orders_message_seller;		//读取商品信息
 };
 //卖家类。
+
+
+/*
+void xy(int y, int x)
+{
+	COORD  coord;
+	coord.X = x;
+	coord.Y = y;
+	HANDLE a = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(a, coord);
+}*/

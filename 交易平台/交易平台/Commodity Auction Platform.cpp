@@ -1,10 +1,377 @@
 #include"Commodity Auction Platform.h"
 
-void Sellers::List_Good(User*p)
+void Users::Buyers_Module()
+{
+	Buyers* user = new Buyers;
+	user->user_buyer = now_user;
+	user->nowuser = now_user;
+	system("cls");
+	cout << "================================================================================================" << endl;
+	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.查看历史订单 5.查看商品详细信息 6.返回用户主界面" << endl;
+	cout << "================================================================================================" << endl;
+	now_user->u_state = '1';
+	Update_message();
+	option = 0;
+	cout << "请输入操作：";
+	cin >> option;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> option;
+	}
+	switch (option)
+	{
+	case 1:user->Search_all_Goods(); break;
+	case 2:user->Join_Group_Menu(); break;
+	case 3:user->Search_Good(); break;
+	case 4:user->B_Histroy_Orders(); break;
+	case 5:user->Good_Message(); break;
+	case 6:User_Menu(); break;
+	default:cout << "输入指令错误！" << endl; break;
+	}
+}
+//买家模块。
+void Users::Sellers_Module()
+{
+	Sellers* user = new Sellers;
+	user->user_seller = now_user;
+	user->nowuser = now_user;
+	system("cls");
+	cout << "=======================================================================================================" << endl;
+	cout << "  1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.加入竞拍群聊 7.返回用户主界面" << endl;
+	cout << "=======================================================================================================" << endl;
+	now_user->u_state = '2';
+	Update_message();
+	option = 0;
+	cout << "请输入操作：";
+	cin >> option;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> option;
+	}
+	switch (option)
+	{
+	case 1:user->List_Good(now_user); break;
+	case 2:user->Listed_Good(now_user); break;
+	case 3:user->Change_Good_Message(); break;
+	case 4:user->Remove_Good(now_user); break;
+	case 5:user->S_Histroy_Orders(); break;
+	case 6:user->Join_Group_Menu(); break;
+	case 7:User_Menu(); break;
+	default:cout << "输入指令错误！" << endl; break;
+	}
+}
+//卖家模块。
+void Users::Information_Module()
+{
+	system("cls");
+	cout << "==================================================" << endl;
+	cout << "  1.查看信息 2.修改信息 3.充值 4.返回用户主界面" << endl;
+	cout << "==================================================" << endl;
+	int opt = 0;
+	cout << "请输入操作：";
+	cin >> opt;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> opt;
+	}
+	//Get_Users_Message();
+	switch (opt)
+	{
+	case 1:Search_message(); break;
+	case 2:Change_message(); break;
+	case 3:Add_money(); break;
+	case 4:User_Menu(); break;
+	default:cout << "无效命令！"; break;
+	}
+}
+//用户模块函数
+void Users::User_sign_up()
+{
+	Get_Users_Message();
+	User* someone = new User;
+	someone->cnt = users_end->cnt;
+	User* a;
+l:
+	cout << "请输入你的姓名：";
+	cin >> someone->u_name;
+	a = users_begin;
+	while (a->next != NULL)
+	{
+		a = a->next;
+		if (strcmp(someone->u_name, a->u_name) == 0)
+		{
+			cout << "用户名重复，请重新输入" << endl;
+			goto l;
+		}
+	}
+	cout << "请输入你的电话号码：";
+	cin >> someone->u_phone;
+	cout << "请输入你的地址：";
+	cin >> someone->u_adress;
+	cout << "请创建你的密码：";
+	cin >> someone->u_password;
+	someone->cnt++;
+	someone->u_id[1] = someone->cnt / 100 + '0';
+	someone->u_id[2] = (someone->cnt % 100) / 10 + '0';
+	someone->u_id[3] = someone->cnt % 10 + '0';
+	fstream outfile("user.txt", ios::app);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，用户注册失败！* * *" << endl;
+		exit(0);
+	}
+	if (someone != NULL)
+	{
+		outfile << someone->u_id << " " << someone->u_name << " " << someone->u_phone << " " << someone->u_adress << " " << someone->u_password << " " << someone->u_state << " " << someone->u_money << endl;
+		cout << "* * * 恭喜您，用户注册成功！* * *" << endl;
+		cout << "系统为您生成的ID为：";
+		cout << someone->u_id;
+		cout << endl;
+		Sleep(2000);
+	}
+	delete someone;
+	delete a;
+	outfile.close();
+}
+void Users::Get_Users_Message()
+{
+	int i = 0;
+	User* p, * q;
+	p = new User;
+	users_begin = new User;
+	users_end = new User;
+	users_begin->next = NULL;
+	q = users_begin;
+	ifstream infile("user.txt", ios::in | ios::binary);
+	if (!infile)
+	{
+		cout << "用户信息文件不存在！" << endl;
+		Sleep(2000);
+		system("cls");
+		exit(0);
+	}
+	while (!infile.eof())
+	{
+		infile >> p->u_id >> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money;
+		if (infile.fail())
+			break;
+		p->next = NULL;
+		q->next = p;
+		q = q->next;
+		i++;
+		p = new User;
+	}
+	users_end = q;
+	if (i == 0)
+	{
+		users_end->u_id[1] = '0';
+		users_end->u_id[2] = '0';
+		users_end->u_id[3] = '0';
+	}
+	users_end->cnt = (users_end->u_id[1] - '0') * 100 + (users_end->u_id[2] - '0') * 10 + (users_end->u_id[3] - '0');
+	q->next = NULL;
+	infile.close();
+	delete p;
+}						//读取有问题
+bool Users::User_login()
+{
+	Get_Users_Message();
+	now_user = new User;
+	User someone;
+	int flage = 0;
+	cout << "请输入用户名：";
+	cin >> someone.u_name;
+	cout << "请输入密码：";
+	cin >> someone.u_password;
+	User* p, * q;
+	p = this->users_begin;
+	q = new User;
+	if (p == NULL)
+	{
+		cout << "* * * 很遗憾，登陆失败！* * *" << endl;
+		return false;
+	}
+	while (p->next != NULL)
+	{
+		if (strcmp(p->next->u_name, someone.u_name) == 0)
+		{
+			flage = 1;
+			q = p->next;
+			break;
+		}
+		p = p->next;
+	}
+	if (flage == 0)
+	{
+		cout << "* * * 用户名不存在！* * *" << endl;
+		return false;
+	}
+	if (strcmp(q->u_password, someone.u_password) == 0)
+	{
+		cout << "* * * 恭喜您，登陆成功！* * *" << endl;
+		now_user = q;
+		return true;
+	}
+	else
+	{
+		cout << "* * * 密码错误！* * *" << endl;
+		return false;
+	}
+	delete p;
+}
+void Users::User_Menu()
+{
+	system("cls");
+	cout << "===================================================" << endl;
+	cout << "  1.我是买家 2.我是卖家 3.个人信息管理 4.注销登录" << endl;
+	cout << "===================================================" << endl;
+	cout << "请输入操作：";
+	int opt = 0;
+	cin >> opt;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> opt;
+	}
+	switch (opt)
+	{
+	case 1:Buyers_Module(); break;
+	case 2:Sellers_Module(); break;
+	case 3:Information_Module(); break;
+	case 4:exit(0); break;
+	default:cout << "输入指令错误！" << endl; break;
+	}
+}
+void Users::Search_message()
+{
+	cout << "*************************************" << endl;
+	cout << "用户名：" << now_user->u_name << endl;
+	cout << "联系方式：" << now_user->u_phone << endl;
+	cout << "地址：" << now_user->u_adress << endl;
+	cout << "钱包余额：" << now_user->u_money << endl;
+	cout << "*************************************" << endl;
+}
+void Users::Change_message()
+{
+	int opt;
+remake:
+	opt = 0;
+	cout << "请选择你要修改的属性（1.用户名 2.联系方式 3.地址 4.登录密码）：";
+	cin >> opt;
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新尝试" << endl;
+		cin.clear();
+		cin.ignore();
+		cout << "请选择你要修改的属性（1.用户名 2.联系方式 3.地址 4.登录密码）：";
+		cin >> opt;
+	}
+	switch (opt)
+	{
+	case 1:Change_name(); break;
+	case 2:Change_phone(); break;
+	case 3:Change_adress(); break;
+	case 4:Change_password(); break;
+	default:cout << "无效操作！"; break;
+	}
+	cout << "请选择是否继续修改：1.继续修改 2.保存修改并返回信息管理界面" << endl;
+	opt = 0;
+	cin >> opt;
+	switch (opt)
+	{
+	case 1:goto remake;
+	case 2:Information_Module(); break;
+	default:cout << "无效操作！"; break;
+	}
+}
+void Users::Change_name()
+{
+	char name[11] = { '0' };
+l:
+	cout << "请输入新的用户名：";
+	cin >> name;
+	//Get_Users_Message();
+	User* a;
+	a = users_begin;
+	while (a->next != NULL)
+	{
+		a = a->next;
+		if (strcmp(name, a->u_name) == 0)
+		{
+			cout << "用户名重复，请重新输入" << endl;
+			goto l;
+		}
+	}
+	strcpy(now_user->u_name, name);
+	Update_message();
+}
+void Users::Change_phone()
+{
+	cout << "请输入新的联系方式：";
+	cin >> now_user->u_phone;
+	Update_message();
+}
+void Users::Change_adress()
+{
+	cout << "请输入新地址：";
+	cin >> now_user->u_adress;
+	Update_message();
+}
+void Users::Change_password()
+{
+	cout << "请输入新的密码：";
+	cin >> now_user->u_password;
+	Update_message();
+}
+void Users::Update_message()
+{
+	User* p = new User;
+	p = this->users_begin->next;
+	fstream outfile("user.txt", ios::out);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
+		exit(0);
+	}
+	while (p != NULL)
+	{
+		outfile << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money << endl;
+		p = p->next;
+	}
+	outfile.close();
+}
+void Users::Add_money()
+{
+	double money;
+	char str[100];
+	cout << "请输入充值金额：";
+	cin >> money;
+	initgraph(490, 670);
+	loadimage(0, "collect_money.jpg", 490, 670);
+	system("pause");
+	closegraph();
+	sprintf(str, "%.1lf\t", atof(now_user->u_money) + money);
+	strcpy(now_user->u_money, str);
+	Update_message();
+	cout << "恭喜您，充值成功！" << endl;
+}
+
+void Sellers::List_Good(User* p)
 {
 	Get_Goods_Message();
 	user_seller = p;
-	Good* newgood=new Good;
+	Good* newgood = new Good;
 	newgood->cnt = goods_message_seller_end->cnt;
 	char opt = '0';
 	cout << "请输入商品名称：";
@@ -37,11 +404,11 @@ void Sellers::List_Good(User*p)
 	cin >> opt;
 	if (opt == 'y')
 	{
-		cout << "确认发布商品"<<endl;
+		cout << "确认发布商品" << endl;
 	}
 	else
 	{
-		cout << "取消发布商品"<<endl;
+		cout << "取消发布商品" << endl;
 		exit(0);
 	}
 	fstream outfile("good.txt", ios::app);
@@ -52,15 +419,15 @@ void Sellers::List_Good(User*p)
 	}
 	if (newgood != NULL)
 	{
-		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " << newgood->g_number << " " << newgood->g_message <<" " << user_seller->u_id << " " << newgood->g_state << endl;
+		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " << newgood->g_number << " " << newgood->g_message << " " << user_seller->u_id << " " << newgood->g_state << endl;
 		cout << "* * * 恭喜您，发布商品成功！* * *" << endl;
 		cout << "该商品的ID为：";
 		cout << newgood->g_id;
 		delete newgood;
 	}
-	outfile.close(); 
+	outfile.close();
 }
-void Sellers::Listed_Good(User*w)
+void Sellers::Listed_Good(User* w)
 {
 	Get_Goods_Message();
 	int flage = 0;
@@ -77,7 +444,7 @@ void Sellers::Listed_Good(User*w)
 	while (p->next != NULL)
 	{
 		p = p->next;
-		if (strcmp(p->g_seller,w->u_id) == 0)
+		if (strcmp(p->g_seller, w->u_id) == 0)
 		{
 			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_number << "  " << p->g_seller << "  " << p->g_state << endl;
 			flage = 1;
@@ -111,7 +478,7 @@ void Sellers::Change_Good_Message()
 			}
 			else
 			{
-				cout << "这不是您发布的商品，您没有权限修改它的属性，请尝试重新输入。"<<endl;
+				cout << "这不是您发布的商品，您没有权限修改它的属性，请尝试重新输入。" << endl;
 				goto l;
 			}
 		}
@@ -155,7 +522,7 @@ void Sellers::Change_Good_Message()
 		break;
 	default:cout << "无效操作！"; break;
 	}
-	l:
+l:
 	cout << "请选择是否继续修改：1.继续修改 2.保存修改并返回信息管理界面" << endl;
 	opt = 0;
 	cin >> opt;
@@ -164,12 +531,12 @@ void Sellers::Change_Good_Message()
 	case 1:Change_Good_Message(); break;
 	case 2:
 		now_user = user_seller;
-		Sellers_Module(); 
+		Sellers_Module();
 		break;
 	default:cout << "无效操作！"; break;
 	}
 }
-void Sellers::Remove_Good(User*p)
+void Sellers::Remove_Good(User* p)
 {
 	Get_Goods_Message();
 	user_seller = p;
@@ -293,7 +660,7 @@ void Sellers::Updata_Goods_Message()
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->g_name << " " <<p->g_price << " " << p->g_number << " " << p->g_message << " " << user_seller->u_id << " " <<p->g_state << endl;
+		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " " << p->g_number << " " << p->g_message << " " << user_seller->u_id << " " << p->g_state << endl;
 		p = p->next;
 	}
 	outfile.close();
@@ -308,7 +675,7 @@ void Buyers::Search_all_Goods()
 	while (p->next != NULL)
 	{
 		p = p->next;
-		if(p->g_state=='1'||p->g_state=='2')
+		if (p->g_state == '1' || p->g_state == '2')
 			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_number << "  " << p->g_seller << "  " << p->g_state << endl;
 	}
 	cout << "********************************************************************************" << endl;
@@ -366,7 +733,6 @@ void Buyers::Get_Orders_Message()
 {
 
 }
-
 
 void Administrator::all_goods()
 {
@@ -468,12 +834,12 @@ void Administrator::ban_user()
 	Achieve_Users_Message();
 	User* id = new User;
 	User* p = new User;
-	p=a_users_begin->next;
+	p = a_users_begin->next;
 	cout << "请输入要封禁的用户ID：";
 	cin >> id->u_id;
 	while (p != NULL)
 	{
-		if (strcmp(p->u_id,id->u_id) == 0)
+		if (strcmp(p->u_id, id->u_id) == 0)
 		{
 			flage = 1;
 			break;
@@ -521,9 +887,9 @@ void Administrator::ban_user()
 	q = a_goods_begin->next;
 	Good* temp = new Good;
 	temp = a_goods_begin;
-	while (q!= NULL)
+	while (q != NULL)
 	{
-		if ( strcmp(q->g_seller, id->u_id) == 0)
+		if (strcmp(q->g_seller, id->u_id) == 0)
 		{
 			Good* t = new Good;
 			t = q;
@@ -533,7 +899,7 @@ void Administrator::ban_user()
 				temp->next = NULL;
 				delete t;
 			}
-			else 
+			else
 			{
 				temp->next = q->next;
 				q = q->next;
@@ -546,7 +912,7 @@ void Administrator::ban_user()
 			q = q->next;
 		}
 	}
-	Good* b=new Good;
+	Good* b = new Good;
 	b = this->a_goods_begin->next;
 	fstream outfile2("good.txt", ios::out);
 	if (!outfile2)
@@ -663,10 +1029,29 @@ void Administrator::Updata_Users()
 	outfile.close();
 }
 
-
 void Auction_group::Send_Message()
 {
-
+	//Display_History_Message();
+	Message* p = new Message;
+	end->next = new Message;
+	p = end->next;
+	char buf[200];
+	time_t now;
+	time(&now);
+	struct tm* tempTime = localtime(&now);
+	strftime(p->nowtime, 20, "[%H:%M:%S]", tempTime);
+	cin >> p->content;
+	strcpy(buf, p->nowtime);
+	strcat(buf, "\t");
+	strcat(buf, "from user--");
+	strcat(buf, nowuser->u_name);
+	strcat(buf, "(goup-sent):\n");
+	strcat(buf, p->content);
+	strcat(buf, "\n");
+	cout << buf;
+	end = p;
+	end->next = NULL;
+	Store_Message();
 }
 void Auction_group::Withdraw_Message()
 {
@@ -682,7 +1067,6 @@ void Auction_group::Display_History_Message()
 	p = new Message;
 	start = new Message;
 	end = new Message;
-	start->next = NULL;
 	q = start;
 	ifstream infile("message.txt", ios::in | ios::binary);
 	if (!infile)
@@ -694,16 +1078,17 @@ void Auction_group::Display_History_Message()
 	}
 	while (!infile.eof())
 	{
-		infile >> p->people->u_name >> p->time >> p->content;
+		infile >> p->name >> p->nowtime >> p->content;
 		if (infile.fail())
 			break;
-		p->next = NULL;
+		q->next = new Message;
 		q->next = p;
 		q = q->next;
+		q->next = NULL;
 		p = new Message;
 	}
 	end = q;
-	q->next = NULL;
+	end->next = NULL;
 	infile.close();
 	delete p;
 }
@@ -713,17 +1098,16 @@ void Auction_group::Join_Group_Menu()
 	cout << "			欢迎来到竞拍群聊！					  " << endl;
 	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与竞拍 4.退出群聊		 " << endl;
 	int opt = 0;
-	Buyers* buyer=new Buyers;
+	Buyers* buyer = new Buyers;
 	Sellers* seller = new Sellers;
-	seller->now_user = nowuser;
-	buyer->now_user = nowuser;
 	Display_History_Message();
 	Message* p = new Message;
 	p = start;
 	while (p->next != NULL)
 	{
 		p = p->next;
-		cout << std::left << setw(20) << p->people->u_name << ":" << p->content << std::right << setw(20) << p->time << endl;
+		cout << p->nowtime << "\t" << "from user--" << p->name << "(goup-sent):\n";
+		cout << p->content << endl;
 	}
 	while (true)
 	{
@@ -739,11 +1123,7 @@ void Auction_group::Join_Group_Menu()
 		switch (opt)
 		{
 		case 1:
-			p->next = new Message;
-			cin >> p->next->content;
-			p = p->next;
-			p->next = NULL;
-			cout << std::left << setw(20) << p->time << std::right << setw(20) << p->people->u_name << ":" << p->content << endl;
+			Send_Message();
 			break;
 		case 2:Withdraw_Message(); break;
 		case 3:
@@ -754,9 +1134,15 @@ void Auction_group::Join_Group_Menu()
 			break;
 		case 4:
 			if (nowuser->u_state == '1')
+			{
+				buyer->Get_Users_Message();
 				buyer->Buyers_Module();
+			}
 			else if (nowuser->u_state == '2')
+			{
+				seller->Get_Users_Message();
 				seller->Sellers_Module();
+			}
 			else
 				cout << "输入指令错误！" << endl;
 			break;
@@ -775,13 +1161,52 @@ void Auction_group::Store_Message()
 		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
 		exit(0);
 	}
-	while (p != NULL)
+	while (p->next != NULL)
 	{
-		outfile << p->people << " " << p->time << " " << p->content << endl;
+		p = p->next;
+		outfile << p->name << " " << p->nowtime << " " << p->content << endl;
 	}
 	outfile.close();
 }
 
+void Users_Module(int st)
+{
+	int flage = 0;
+	Users user;
+	User* somebody = new User;
+	if (st == 2)
+	{
+		user.User_sign_up();
+		//system("cls");
+		cout << "请选择是否现在登录：1.登录 2.退出" << endl;
+		cin >> flage;
+		if (flage == 1)
+			goto login;
+		else
+			exit(0);
+	}
+	else
+	{
+		flage = 0;
+	login:
+		//system("cls");
+		if (user.User_login())
+			Sleep(2000);
+		else
+		{
+			Sleep(2000);
+			system("cls");
+			cout << "请选择是否重新登陆：1.重新登陆 2.退出" << endl;
+			cin >> flage;
+			if (flage == 1)
+				goto login;
+			else
+				exit(0);
+		}
+		user.User_Menu();
+	}
+}
+//用户模块。
 
 bool Administrator_Module()
 {
@@ -827,421 +1252,12 @@ bool Administrator_Module()
 	return true;
 }
 //管理员模块。
-void Users_Module(int st)
-{
-	int flage = 0;
-	Users user;
-	User* somebody=new User;
-	if (st == 2)
-	{
-		user.User_sign_up();
-		//system("cls");
-		cout << "请选择是否现在登录：1.登录 2.退出"<<endl;
-		cin >> flage;
-		if (flage == 1)
-			goto login;
-		else
-			exit(0);
-	}
-	else
-	{
-		flage = 0;
-		login:
-		//system("cls");
-		if (user.User_login())
-			Sleep(2000);
-		else
-		{
-			Sleep(2000);
-			system("cls");
-			cout << "请选择是否重新登陆：1.重新登陆 2.退出"<<endl;
-			cin >> flage;
-			if (flage == 1)
-				goto login;
-			else
-				exit(0);
-		}
-		user.User_Menu();
-	}
-}
-//用户模块。
-void Users::Buyers_Module()
-{
-	Buyers* user = new Buyers;
-	user->user_buyer = now_user;
-	user->nowuser = now_user;
-	system("cls");
-	cout << "================================================================================================" << endl;
-	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.查看历史订单 5.查看商品详细信息 6.返回用户主界面" << endl;
-	cout << "================================================================================================" << endl;
-	now_user->u_state = '1';
-	Update_message();
-	option = 0;
-	cout << "请输入操作：";
-	cin >> option;
-	while (cin.fail())
-	{
-		cerr << "输入错误，请重新输入：";
-		cin.clear();
-		cin.ignore();
-		cin >> option;
-	}
-	switch (option)
-	{
-	case 1:user->Search_all_Goods(); break;
-	case 2:user->Join_Group_Menu(); break;
-	case 3:user->Search_Good(); break;
-	case 4:user->B_Histroy_Orders(); break;
-	case 5:user->Good_Message(); break;
-	case 6:User_Menu(); break;
-	default:cout << "输入指令错误！" << endl; break;
-	}
-}
-//买家模块。
-void Users::Sellers_Module()
-{
-	Sellers* user=new Sellers;
-	user->user_seller = now_user;
-	system("cls");
-	cout << "=======================================================================================================" << endl;
-	cout << "  1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.加入竞拍群聊 7.返回用户主界面" << endl;
-	cout << "=======================================================================================================" << endl;
-	now_user->u_state = '2';
-	Update_message();
-	option = 0;
-	cout << "请输入操作：";
-	cin >> option;
-	while (cin.fail())
-	{
-		cerr << "输入错误，请重新输入：";
-		cin.clear();
-		cin.ignore();
-		cin >> option;
-	}
-	switch (option)
-	{
-	case 1:user->List_Good(now_user); break;
-	case 2:user->Listed_Good(now_user); break;
-	case 3:user->Change_Good_Message(); break;
-	case 4:user->Remove_Good(now_user); break;
-	case 5:user->S_Histroy_Orders(); break;
-	case 6:user->Join_Group_Menu(); break;
-	case 7:User_Menu(); break;
-	default:cout << "输入指令错误！" << endl; break;
-	}
-}
-//卖家模块。
-void Users::Information_Module()
-{
-	system("cls");
-	cout << "==================================================" << endl;
-	cout << "  1.查看信息 2.修改信息 3.充值 4.返回用户主界面" << endl;
-	cout << "==================================================" << endl;
-	int opt = 0;
-	cout << "请输入操作：";
-	cin >> opt;
-	while (cin.fail())
-	{
-		cerr << "输入错误，请重新输入：";
-		cin.clear();
-		cin.ignore();
-		cin >> opt;
-	}
-	//Get_Users_Message();
-	switch (opt)
-	{
-	case 1:Search_message(); break;
-	case 2:Change_message(); break;
-	case 3:Add_money(); break;
-	case 4:User_Menu(); break;
-	default:cout << "无效命令！"; break;
-	}
-}
-//用户模块函数
-
-
-
-void Users::User_sign_up()
-{
-	Get_Users_Message();
-	User* someone = new User;
-	someone->cnt = users_end->cnt;
-	User* a;
-	l:
-	cout << "请输入你的姓名：";
-	cin >> someone->u_name;
-	a = users_begin;
-	while (a->next != NULL)
-	{
-		a = a->next;
-		if (strcmp(someone->u_name, a->u_name) == 0)
-		{
-			cout << "用户名重复，请重新输入" << endl;
-			goto l;
-		}
-	}
-	cout << "请输入你的电话号码：";
-	cin >> someone->u_phone;
-	cout << "请输入你的地址：";
-	cin >> someone->u_adress;
-	cout << "请创建你的密码：";
-	cin >> someone->u_password;
-	someone->cnt++;
-	someone->u_id[1] = someone->cnt / 100 + '0';
-	someone->u_id[2] = (someone->cnt % 100) / 10 + '0';
-	someone->u_id[3] = someone->cnt % 10 + '0';
-	fstream outfile("user.txt", ios::app);
-	if (!outfile)
-	{
-		cout << "* * * 很遗憾，用户注册失败！* * *" << endl;
-		exit(0);
-	}
-	if (someone != NULL)
-	{
-		outfile << someone->u_id<<" "<< someone->u_name << " " << someone->u_phone << " " << someone->u_adress << " " << someone->u_password << " " << someone->u_state << " " << someone->u_money << endl;
-		cout << "* * * 恭喜您，用户注册成功！* * *" << endl;
-		cout << "系统为您生成的ID为：";
-		cout << someone->u_id;
-		cout << endl;
-		Sleep(2000);
-	}
-	delete someone;
-	delete a;
-	outfile.close();
-}	
-void Users::Get_Users_Message()
-{
-	int i = 0;
-	User* p, * q;
-	p = new User;
-	users_begin = new User;
-	users_end = new User;
-	users_begin->next = NULL;
-	q = users_begin;
-	ifstream infile("user.txt", ios::in | ios::binary);
-	if (!infile)
-	{
-		cout << "用户信息文件不存在！" << endl; 
-		Sleep(2000);
-		system("cls");
-		exit(0);
-	}
-	while (!infile.eof())
-	{
-		infile >> p->u_id>> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money;
-		if (infile.fail())
-			break;
-		p->next = NULL;
-		q->next = p;
-		q = q->next;
-		i++;
-		p = new User;
-	}
-	users_end = q;
-	if (i == 0)
-	{
-		users_end->u_id[1] = '0';
-		users_end->u_id[2] = '0';
-		users_end->u_id[3] = '0';
-	}
-	users_end->cnt = (users_end->u_id[1] - '0') * 100 + (users_end->u_id[2] - '0') * 10 + (users_end->u_id[3] - '0');
-	q->next = NULL;
-	infile.close();
-	delete p;
-}						//读取有问题
-bool Users::User_login()
-{
-	Get_Users_Message();
-	now_user = new User;
-	User someone;
-	int flage = 0;
-	cout<< "请输入用户名：";
-	cin >> someone.u_name;
-	cout << "请输入密码：";
-	cin >> someone.u_password;
-	User* p, * q;
-	p = this->users_begin;
-	q = new User;
-	if (p == NULL)
-	{
-		cout << "* * * 很遗憾，登陆失败！* * *"<<endl;
-		return false;
-	}
-	while (p->next != NULL) 
-	{
-		if (strcmp(p->next->u_name,someone.u_name)==0)
-		{
-			flage = 1;
-			q = p->next;
-			break;
-		}
-		p = p->next;
-	}
-	if (flage == 0)
-	{
-		cout << "* * * 用户名不存在！* * *"<<endl;
-		return false;
-	}
-	if (strcmp(q->u_password,someone.u_password)==0)
-	{
-		cout << "* * * 恭喜您，登陆成功！* * *" << endl;
-		now_user = q;
-		return true;
-	}
-	else
-	{
-		cout << "* * * 密码错误！* * *" << endl;
-		return false;
-	}
-	delete p;
-}
-void Users::User_Menu()
-{
-	system("cls");
-	cout << "===================================================" << endl;
-	cout << "  1.我是买家 2.我是卖家 3.个人信息管理 4.注销登录" << endl;
-	cout << "===================================================" << endl;
-	cout << "请输入操作：";
-	int opt=0;
-	cin >> opt;
-	while (cin.fail())
-	{
-		cerr << "输入错误，请重新输入：";
-		cin.clear();
-		cin.ignore();
-		cin >> opt;
-	}
-	switch (opt)
-	{
-	case 1:Buyers_Module(); break;
-	case 2:Sellers_Module(); break;
-	case 3:Information_Module(); break;
-	case 4:exit(0); break;
-	default:cout << "输入指令错误！" << endl; break;
-	}
-}
-void Users::Search_message()
-{
-	cout << "*************************************" << endl;
-	cout << "用户名：" << now_user->u_name << endl;
-	cout << "联系方式：" << now_user->u_phone << endl;
-	cout << "地址：" << now_user->u_adress << endl;
-	cout << "钱包余额：" << now_user->u_money << endl;
-	cout << "*************************************" << endl;
-}
-void Users::Change_message()
-{
-	int opt;
-	remake:
-	opt = 0;
-	cout << "请选择你要修改的属性（1.用户名 2.联系方式 3.地址 4.登录密码）：";
-	cin >> opt;
-	while (cin.fail())
-	{
-		cerr << "输入错误，请重新尝试" << endl;
-		cin.clear();
-		cin.ignore();
-		cout << "请选择你要修改的属性（1.用户名 2.联系方式 3.地址 4.登录密码）：";
-		cin >> opt;
-	}
-	switch (opt)
-	{
-	case 1:Change_name(); break;
-	case 2:Change_phone(); break;
-	case 3:Change_adress(); break;
-	case 4:Change_password(); break;
-	default:cout << "无效操作！";break;
-	}
-	cout << "请选择是否继续修改：1.继续修改 2.保存修改并返回信息管理界面" << endl;
-	opt = 0;
-	cin >> opt;
-	switch (opt)
-	{
-	case 1:goto remake;
-	case 2:Information_Module(); break;
-	default:cout << "无效操作！"; break;
-	}
-}
-void Users::Change_name()
-{
-	char name[11] = { '0' };
-	l:
-	cout << "请输入新的用户名：";
-	cin >> name;
-	//Get_Users_Message();
-	User* a;
-	a = users_begin;
-	while (a->next != NULL)
-	{
-		a = a->next;
-		if (strcmp( name, a->u_name) == 0)
-		{
-			cout << "用户名重复，请重新输入" << endl;
-			goto l;
-		}
-	}
-	strcpy(now_user->u_name,name);
-	Update_message();
-}
-void Users::Change_phone()
-{
-	cout << "请输入新的联系方式：";
-	cin >> now_user->u_phone;
-	Update_message();
-}
-void Users::Change_adress()
-{
-	cout << "请输入新地址：";
-	cin >> now_user->u_adress;
-	Update_message();
-}
-void Users::Change_password()
-{
-	cout << "请输入新的密码：";
-	cin >> now_user->u_password;
-	Update_message();
-}
-void Users::Update_message()
-{
-	User* p = new User;
-	p = this->users_begin->next;
-	fstream outfile("user.txt", ios::out);
-	if (!outfile)
-	{
-		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
-		exit(0);
-	}
-	while (p != NULL)
-	{
-	outfile << p->u_id<<" "<<p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money << endl;
-	p = p->next;
-	}
-	outfile.close();
-}
-void Users::Add_money()
-{
-	double money;
-	char str[100];
-	cout << "请输入充值金额：";
-	cin >> money;
-	initgraph(490, 670);
-	loadimage(0, "collect_money.jpg",490,670);
-	system("pause");
-	closegraph();
-	sprintf(str, "%.1lf\t", atof(now_user->u_money) + money);
-	strcpy(now_user->u_money, str);
-	Update_message();
-	cout << "恭喜您，充值成功！" << endl;
-}
-
-
 
 void Auction_Module()
 {
 
 }
 //竞拍模块
-
 
 int main() {
 	while (true)
