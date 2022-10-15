@@ -12,6 +12,7 @@
 #include<time.h>
 using namespace std;
 int option;
+#define MAXLEN 200
 struct User {
 	char u_state = '1';				//用户的状态
 	char u_id[5] = { 'U' };			//用户的ID
@@ -27,6 +28,7 @@ struct User {
 //定义用户结构，用于存储用户的信息。
 struct Good {
 	char g_state = '1';				//商品的状态，1表示在售；2表示已售空；3表示下架；
+	char g_buy_or_auction = '1';	//商品是竞拍0还是直接售卖1
 	char g_id[5] = { 'M' };			//商品的ID
 	char g_name[21] = { '0' };		//商品名称
 	char g_price[100] = { '0' };	//商品的底价
@@ -53,9 +55,11 @@ struct Order {
 //定义订单的结构，存储订单的信息。
 struct Message
 {
-	char content[30] = { '0' };		//信息的内容
+	char content[400] = { '0' };		//信息的内容
 	char nowtime[20] = { '0' };		//信息的时间
 	char name[11] = { '0' };		//发信息的人
+	char bid[10] = { '0' };
+	char good_id[5] = {'M'};
 	Message* next;					//下一条信息
 };
 //定义消息的结构，用于创建拍卖群消息链表，存储聊天信息
@@ -65,14 +69,19 @@ class Auction_group
 public:
 	void Send_Message();			//发送信息
 	void Withdraw_Message();		//规定用户只能撤回2分钟内的信息
-	void Assign_Goods();			//根据拍卖结果分配商品并扣除相关金额
+	void Assign_Goods(Message*q);			//根据拍卖结果分配商品并扣除相关金额
 	void Display_History_Message();	//显示历史信息
 	void Store_Message();			//存储信息
 	void Join_Group_Menu();			//拍卖群主页面
+	void Send_Goods();				//发布竞拍商品
+	void Join_Auction();			//参与竞拍
+	void Cout_Message();			//输出
+	void Sort_bid(Message*q);		//排序出价
 	Message* start;					//信息头
 	Message* end;					//信息尾
 	Message* now;					//当前信息
 	User* nowuser;					//当前用户
+	Message* sort;
 };
 
 
@@ -97,6 +106,7 @@ public:
 	void Information_Module();	//信息模块
 	void Buyers_Module();		//买家模块
 	void Sellers_Module();		//卖家模块
+	void User_nemu();			//菜单
 	User* users_begin;		//用于读取文件中的信息
 	User* users_end;		//用于读取文件中的信息
 	User* now_user;				//用于指向当前用户
@@ -119,6 +129,7 @@ public:
 	void Achieve_Users_Message();	//获取用户信息
 	void Updata_Users();			//更新用户信息
 	void Delete_Message();			//删除信息
+	void Admin_nemu();				//菜单
 	Good* a_goods_begin;				//商品开始
 	Good* a_goods_end;				//商品结束
 	User* a_users_begin;				//用户开始
@@ -131,17 +142,21 @@ class Buyers :public Users,public Auction_group
 {
 public:
 	void Search_all_Goods();			//查看商品列表
-	void Bid_Good();					//购买商品
+	void Buy_Good();					//购买商品
 	void Search_Good();					//搜索商品
 	void Good_Message();				//查看商品详细信息
 	void B_Histroy_Orders();			//查看历史订单
 	void Get_Goods_Message();			//从good文件中获取信息
 	void Get_Orders_Message();			//从order文件中获取信息
+	void Store_Orders();				//存储订单信息
+	void Buyer_nemu();					//菜单
 	User* user_buyer;					//指出当前买家用户
 	Good* goods_message_buyer_begin;	//读取商品信息
 	Good* goods_message_buyer_end;		//读取商品信息
 	Good* now_good;						//读取商品信息
 	Order* orders_message_buyer;		//读取订单信息
+	Order* orders_begin_buyer;
+	Order* order_end_buyer;
 };
 //买家类。
 class Sellers :public Users,public Auction_group
@@ -155,13 +170,125 @@ public:
 	void Get_Goods_Message();			//从good文件中获取信息
 	void Get_Orders_Message();			//从order文件中获取信息
 	void Updata_Goods_Message();		//更新文件中的商品信息
+	void Seller_nemu();					//菜单
 	User* user_seller;					//指出卖家用户
 	Good* goods_message_seller_begin;	//读取商品信息
 	Good* goods_message_seller_end;		//读取商品信息
 	Good* now_good;						//指向当前商品
 	Order* orders_message_seller;		//读取商品信息
+	Order* orders_begin_seller;
+	Order* order_end_seller;
 };
 //卖家类。
+
+typedef struct
+{
+	char ch[MAXLEN + 1];	
+	int length;			
+}SString;
+//KMP
+int Index_KMP(SString S, SString T, int pos,int nextval[])
+{
+	int i = pos;	
+	int j = 1;	
+
+	while (i <= S.length && j <= T.length)
+	{
+		if (j == 0 || S.ch[i] == T.ch[j])	
+		{
+			++i;
+			++j;
+		}
+		else				
+		{
+			j = nextval[j];
+		}
+	}
+	if (j > T.length) return i - T.length;	
+	else return 0;						
+}
+void get_next(SString T, int next[])
+{
+	int i = 1;
+	int j = 0;	
+	next[1] = 0;
+
+	while (i < T.length)
+	{
+		if (j == 0 || T.ch[i] == T.ch[j])
+		{
+			++i;
+			++j;
+			next[i] = j;
+		}
+		else		
+		{
+			j = next[j];
+		}
+	}
+}
+void get_nextval(SString T, int nextval[])
+{
+	int i = 1;	
+	int j = 0;	
+	nextval[1] = 0;
+
+	while (i < T.length)
+	{
+		if (j == 0 || T.ch[i] == T.ch[j])	
+		{
+			++i;
+			++j;
+
+			if (T.ch[i] != T.ch[j])
+			{
+				nextval[i] = j;
+			}
+			else
+				nextval[i] = nextval[j];
+		}
+		else		
+		{
+			j = nextval[j];
+		}
+	}
+}
+
+class Sort {
+public:
+	void bubbleSort(Message* head, int n) {
+		double b1,b2;
+		if (!head || !head->next) return;
+		for (int i = 0; i < n; ++i) {
+			auto pre = head;
+			auto cur = head->next;
+			bool flag = 0;
+			for (int j = 0; j < n - i - 1; ++j) {
+				b1=strtod(pre->bid, NULL);
+				b2 = strtod(cur->bid, NULL);
+				if (cur != NULL && b1 > b2) {
+					swap(pre, cur);
+					flag = 1;
+				}
+				pre = pre->next;
+				cur = cur->next;
+			}
+			if (!flag)   break;
+		}
+	}
+	Message* sortList(Message* head) {
+		auto p = head;
+		int n = 0; // 记录节点个数
+		while (p != NULL) {
+			++n;
+			p = p->next;
+		}
+		bubbleSort(head, n);
+		return head;
+	}
+};
+
+
 
 
 /*
