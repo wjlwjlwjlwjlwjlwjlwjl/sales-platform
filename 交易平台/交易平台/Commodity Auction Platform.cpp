@@ -4,12 +4,13 @@ void Users::Buyers_Module()
 {
 	Buyers* user = new Buyers;
 	user->user_buyer = now_user;
-	user->nowuser = now_user;
+	Auction_group* group = new Auction_group;
+	group->nowuser = now_user;
 	system("cls");
-	cout << "===========================================================================================================" << endl;
-	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.查看历史订单 6.查看商品详细信息 7.返回用户主界面" << endl;
-	cout << "===========================================================================================================" << endl;
-	now_user->u_state = '1';
+	cout << "=============================================================================================================================================" << endl;
+	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.参与竞拍 6.修改出价 7.取消出价 8.查看历史订单 9.查看商品详细信息 10.返回用户主界面" << endl;
+	cout << "=============================================================================================================================================" << endl;
+	strcpy(now_user->u_state, "买家");
 	Update_message();
 	option = 0;
 	cout << "请输入操作:";
@@ -29,7 +30,7 @@ void Users::Buyers_Module()
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 2:user->Join_Group_Menu();
+	case 2:group->Join_Group_Menu();
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
@@ -44,17 +45,32 @@ void Users::Buyers_Module()
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 5:user->B_Histroy_Orders();
+	case 5:user->Bid(now_user);
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 6:user->Good_Message(); 
+	case 6:user->Change_Bid(now_user);
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 7:User_Menu(); 
+	case 7:user->Remove_Bid(now_user);
+		cout << "请输入操作:";
+		cin >> option;
+		user->Buyer_nemu();
+		goto l;
+	case 8:user->B_Histroy_Orders();
+		cout << "请输入操作:";
+		cin >> option;
+		user->Buyer_nemu();
+		goto l;
+	case 9:user->Good_Message(); 
+		cout << "请输入操作:";
+		cin >> option;
+		user->Buyer_nemu();
+		goto l;
+	case 10:User_Menu(); 
 		break;
 	default:cout << "输入指令错误！" << endl; break;
 	}
@@ -65,12 +81,13 @@ void Users::Sellers_Module()
 	//Get_Users_Message();
 	Sellers* user = new Sellers;
 	user->user_seller = now_user;
-	user->nowuser = now_user;
+	Auction_group *group = new Auction_group;
+	group->nowuser = now_user;
 	system("cls");
 	cout << "=======================================================================================================" << endl;
 	cout << "  1.发布商品 2.查看发布商品 3.修改商品信息 4.下架商品 5.查看历史订单 6.加入竞拍群聊 7.返回用户主界面" << endl;
 	cout << "=======================================================================================================" << endl;
-	now_user->u_state = '2';
+	strcpy(now_user->u_state, "卖家");
 	Update_message();
 	option = 0;
 	cout << "请输入操作:";
@@ -110,7 +127,7 @@ void Users::Sellers_Module()
 		cin >> option;
 		user->Seller_nemu();
 		goto l;
-	case 6:user->Join_Group_Menu(); 
+	case 6:group->Join_Group_Menu(); 
 		cout << "请输入操作:";
 		cin >> option;
 		user->Seller_nemu();
@@ -220,10 +237,6 @@ void Users::Get_Users_Message()
 	ifstream infile("user.txt", ios::in | ios::binary);
 	if (!infile)
 	{
-		//cout << "用户信息文件不存在！" << endl;
-		//Sleep(2000);
-		//system("cls");
-		//exit(0);
 		ofstream file("user.txt");
 		if (file)
 			file.close();
@@ -435,7 +448,7 @@ void Users::Add_money()
 	loadimage(0, "collect_money.jpg", 490, 670);
 	system("pause");
 	closegraph();
-	sprintf(str, "%.1lf\t", atof(now_user->u_money) + money);
+	sprintf(str, "%.1lf", atof(now_user->u_money) + money);
 	strcpy(now_user->u_money, str);
 	Update_message();
 	cout << "恭喜您，充值成功！" << endl;
@@ -455,15 +468,22 @@ void Sellers::List_Good(User* p)
 	Good* newgood = new Good;
 	newgood->cnt = goods_message_seller_end->cnt;
 	char opt = '0';
-	cout << "请输入商品名称：";
+	cout << "请输入商品名称:";
 	cin >> newgood->g_name;
-	cout << "请输入商品价格：";
+	cout << "请输入商品价格:";
 	cin >> newgood->g_price;
-	cout << "请输入商品数量：";
+	cout << "请输入商品数量:";
 	cin >> newgood->g_number;
-	cout << "请输入商品描述：";
+	cout << "请输入商品描述:";
 	cin >> newgood->g_message;
+	cout << "请输入商品类型:";
+	cin >> newgood->g_type;
 	cout << endl;
+	if (strcmp(newgood->g_type, "直售") != 0 && strcmp(newgood->g_type, "竞拍") != 0)
+	{
+		cout << "发布失败！" << endl;
+		return;
+	}
 	newgood->cnt++;
 	newgood->g_id[1] = newgood->cnt / 100 + '0';
 	newgood->g_id[2] = (newgood->cnt % 100) / 10 + '0';
@@ -473,7 +493,6 @@ void Sellers::List_Good(User* p)
 		cerr << "发布商品失败！";
 		Seller_nemu();
 		return;
-		//exit(0);
 	}
 	cout << "请确认发布的商品信息无误！" << endl;
 	cout << "***********************************************" << endl;
@@ -488,10 +507,16 @@ void Sellers::List_Good(User* p)
 	if (opt == 'y')
 	{
 		cout << "确认发布商品" << endl;
-		time_t now;
+		/*time_t now;
 		time(&now);
 		struct tm* tempTime = localtime(&now);
 		strftime(newgood->g_time, 20, "[%H:%M:%S]", tempTime);
+		if (strcmp(newgood->g_type, "竞拍") == 0)
+		{
+			time_t now = time(0);
+			cout << "1970 到目前经过秒数:" << now << endl;
+			tm* ltm = localtime(&now);
+		}*/
 	}
 	else
 	{
@@ -507,7 +532,7 @@ void Sellers::List_Good(User* p)
 	}
 	if (newgood != NULL)
 	{
-		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " <<newgood->g_time<<" " << newgood->g_number << " " << newgood->g_message << " " << user_seller->u_id << " " << newgood->g_state <<" "<<newgood->g_buy_or_auction << endl;
+		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " <<newgood->g_time<<" " << newgood->g_number << " " << newgood->g_message << " " << user_seller->u_id << " " << newgood->g_state <<" "<<newgood->g_type << endl;
 		cout << "* * * 恭喜您，发布商品成功！* * *" << endl;
 		cout << "该商品的ID为：";
 		cout << newgood->g_id << endl;
@@ -534,7 +559,7 @@ void Sellers::Listed_Good(User* w)
 		p = p->next;
 		if (strcmp(p->g_seller, w->u_id) == 0)
 		{
-			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " <<p->g_time<< "       " << p->g_number << "  " << p->g_seller << "  " << p->g_state << " " << p->g_buy_or_auction << endl;
+			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " <<p->g_time<< "       " << p->g_number << "  " << p->g_seller << "  " << p->g_state << " " << p->g_type << endl;
 			flage = 1;
 		}
 	}
@@ -672,7 +697,7 @@ void Sellers::Remove_Good(User* p)
 	cout << "请确认要下架该商品吗？" << endl;
 	cout << "********************************************************************" << endl;
 	cout << "商品ID" << "  " << "商品名称" << "  " << "商品价格" << "  " << "商品数量" << "  " << "卖家ID" << "  " << "商品状态" <<" "<<"商品类型"<< endl;
-	cout << oldgood->g_id << "  " << oldgood->g_name << "  " << oldgood->g_price << "  "<<oldgood->g_time<<"  " << oldgood->g_number << "  " << user_seller->u_id << "  " << oldgood->g_state << " " << oldgood->g_buy_or_auction << endl;
+	cout << oldgood->g_id << "  " << oldgood->g_name << "  " << oldgood->g_price << "  "<<oldgood->g_time<<"  " << oldgood->g_number << "  " << user_seller->u_id << "  " << oldgood->g_state << " " << oldgood->g_type << endl;
 	cout << "********************************************************************" << endl;
 	cout << endl;
 	cout << "请选择(y/n) ";
@@ -680,7 +705,7 @@ void Sellers::Remove_Good(User* p)
 	if (opt == 'y')
 	{
 		cout << "下架成功" << endl;
-		oldgood->g_state = '3';
+		strcpy(oldgood->g_state, "下架");
 	}
 	else
 	{
@@ -731,7 +756,7 @@ void Sellers::Get_Goods_Message()
 	while (!infile.eof())
 	{
 
-		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_time >> p->g_number >> p->g_message >> p->g_seller >> p->g_state >> p->g_buy_or_auction;
+		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_time >> p->g_number >> p->g_message >> p->g_seller >> p->g_state >> p->g_type;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -802,7 +827,7 @@ void Sellers::Updata_Goods_Message()
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " "<<p->g_time<<" " << p->g_number << " " << p->g_message << " " << user_seller->u_id << " " << p->g_state <<" "<<p->g_buy_or_auction<< endl;
+		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " "<<p->g_time<<" " << p->g_number << " " << p->g_message << " " << p->g_seller << " " << p->g_state <<" "<<p->g_type<< endl;
 		p = p->next;
 	}
 	outfile.close();
@@ -824,8 +849,8 @@ void Buyers::Search_all_Goods()
 	while (p->next != NULL)
 	{
 		p = p->next;
-		if (p->g_state == '1' || p->g_state == '2')
-			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_buy_or_auction << endl;
+		if (strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0)
+			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type << endl;
 	}
 	cout << "********************************************************************************" << endl;
 }
@@ -857,7 +882,11 @@ void Buyers::Buy_Good()
 	{
 		cout << "没有找到该商品" << endl;
 		Buyer_nemu();
-		//exit(0);
+		return;
+	}
+	if (strcmp(p->g_type, "直售") != 0)
+	{
+		cout << "该商品不用于直售！" << endl;
 		return;
 	}
 	Get_Users_Message();
@@ -890,11 +919,11 @@ void Buyers::Buy_Good()
 	cin >> opt;
 	if (opt == 'y')
 	{
-		if (p->g_state == '2')
+		if (strcmp(p->g_state,"售空")==0)
 		{
 			cout << "商品已售空" << endl;
 		}
-		else if (p->g_state == '3')
+		else if (strcmp(p->g_state,"下架") == 0)
 		{
 			cout << "商品已下架" << endl;
 		}
@@ -902,14 +931,14 @@ void Buyers::Buy_Good()
 		{
 			cout << "商品余量不足" << endl;
 		}
-		else if (money >= price*n&&p->g_state=='1'&&number>=n)
+		else if (money >= price*n&&strcmp(p->g_state,"在售")==0 && number >= n)
 		{
 			money -= price*n;
 			sprintf(str, "%.1lf\t",money);
 			strcpy(t->u_money, str);
 			number -= n;
 			if (number == 0)
-				p->g_state = '2';
+				strcpy(p->g_state, "售空");
 			_itoa(number, p->g_number, 10);
 			Update_message();
 			Good* q;
@@ -922,7 +951,7 @@ void Buyers::Buy_Good()
 			}
 			while (q != NULL)
 			{
-				outfile << q->g_id << " " << q->g_name << " " << q->g_price << " " << q->g_time << " " << q->g_number << " " << q->g_message << " " << p->g_seller << " " << q->g_state << " " << q->g_buy_or_auction << endl;
+				outfile << q->g_id << " " << q->g_name << " " << q->g_price << " " << q->g_time << " " << q->g_number << " " << q->g_message << " " << p->g_seller << " " << q->g_state << " " << q->g_type << endl;
 				q = q->next;
 			}
 			outfile.close();
@@ -968,7 +997,7 @@ void Buyers::Search_Good()
 		while (p->next != NULL)
 		{
 			p = p->next;
-			if ((p->g_state == '1' || p->g_state == '2') && strcmp(input, p->g_id)==0)
+			if ((strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0) && strcmp(input, p->g_id) == 0)
 			{
 				count++;
 				if (count == 1)
@@ -976,7 +1005,7 @@ void Buyers::Search_Good()
 					cout << "********************************************************************************" << endl;
 					cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态    商品类型" << endl;
 				}
-				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_buy_or_auction << endl;
+				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type << endl;
 			}
 		}
 		cout << "********************************************************************************" << endl;
@@ -1019,7 +1048,7 @@ void Buyers::Search_Good()
 			}
 			get_next(T, next);
 			get_nextval(T, nextval);
-			if ((p->g_state == '1' || p->g_state == '2') && Index_KMP(S,T,1,nextval)!=0)
+			if ((strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0) && Index_KMP(S, T, 1, nextval) != 0)
 			{
 				count++;
 				if (count == 1)
@@ -1027,7 +1056,7 @@ void Buyers::Search_Good()
 					cout << "********************************************************************************" << endl;
 					cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态    商品类型" << endl;
 				}
-				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_buy_or_auction <<endl;
+				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type <<endl;
 			}
 		}
 		cout << "********************************************************************************" << endl;
@@ -1095,7 +1124,7 @@ void Buyers::Get_Goods_Message()
 	while (!infile.eof())
 	{
 
-		infile >> p->g_id >> p->g_name >> p->g_price >>p->g_time>> p->g_number >> p->g_message >> p->g_seller >> p->g_state>> p->g_buy_or_auction;
+		infile >> p->g_id >> p->g_name >> p->g_price >>p->g_time>> p->g_number >> p->g_message >> p->g_seller >> p->g_state>> p->g_type;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -1173,10 +1202,218 @@ void Buyers::Store_Orders()
 void Buyers::Buyer_nemu()
 {
 	system("cls");
-	cout << "===========================================================================================================" << endl;
-	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.查看历史订单 6.查看商品详细信息 7.返回用户主界面" << endl;
-	cout << "===========================================================================================================" << endl;
+	cout << "======================================================================================================================" << endl;
+	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.参与竞拍 6.查看历史订单 7.查看商品详细信息 8.返回用户主界面" << endl;
+	cout << "======================================================================================================================" << endl;
 }
+void Buyers::Bid(User*user)
+{
+	Get_Bid();
+	Get_Goods_Message();
+	user_buyer = user;
+	Bidding* newbid = new Bidding;
+	bid_end->next = new Bidding;
+	newbid = bid_end->next;
+	cout << "请输入您要竞价的商品的ID:";
+	cin >> newbid->g_id;
+	cout << "请输入您的出价:";
+	cin >> newbid->bid;
+	cout << "请输入您要竞拍的商品数量:";
+	cin >> newbid->number;
+	time_t now;
+	time(&now);
+	struct tm* tempTime = localtime(&now);
+	strftime(newbid->time, 20, "[%H:%M:%S]", tempTime);
+	Good* g = new Good;
+	g = goods_message_buyer_begin;
+	int flage = 0;
+	while (g->next != NULL)
+	{
+		g = g->next;
+		if (strcmp(g->g_id, newbid->g_id) == 0)
+		{
+			flage = 1;
+			break;
+		}
+	}
+	if (flage == 0)
+	{
+		cout << "没有找到该商品！" << endl;
+		return;
+	}
+	if (strcmp(g->g_type, "竞拍") != 0)
+	{
+		cout << "该商品不用于竞拍！" << endl;
+		return;
+	}
+	double money = 0, price = 0;
+	int num1 = 0, num2 = 0;
+	num1 = atoi(newbid->number);
+	num2 = atoi(g->g_number);
+	money = atof(newbid->bid);
+	price = atof(g->g_price);
+	if (money<price || num1>num2)
+	{
+		cout << "竞拍失败!" << endl;
+		return;
+	}
+	strcpy(newbid->u_id, user_buyer->u_id);
+	bid_end = bid_end->next;
+	bid_end->next = NULL;
+	Bidding* p = new Bidding;
+	p = bid_begin->next;
+	fstream outfile("bidding.txt", ios::out);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
+		exit(0);
+	}
+	while (p != NULL)
+	{
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number <<" "<<p->time << endl;
+		p = p->next;
+	}
+	outfile.close();
+}
+void Buyers::Get_Bid()
+{
+	Bidding* p, * q;
+	p = new Bidding;
+	bid_begin = new Bidding;
+	bid_end = new Bidding;
+	bid_end->next = NULL;
+	q = bid_begin;
+	ifstream infile("bidding.txt", ios::in | ios::binary);
+	if (!infile)
+	{
+		ofstream file("bidding.txt");
+		if (file)
+			file.close();
+		else
+		{
+			cout << "文件创建失败" << endl;
+			exit(-1);
+		}
+	}
+	while (!infile.eof())
+	{
+		infile >> p->g_id >> p->u_id >> p->bid >> p->number >> p->time;
+		if (infile.fail())
+			break;
+		p->next = NULL;
+		q->next = p;
+		q = q->next;
+		p = new Bidding;
+	}
+	bid_end = q;
+	q->next = NULL;
+	infile.close();
+	delete p;
+}
+void Buyers::Change_Bid(User* user)
+{
+	Get_Bid();
+	Bidding* b = new Bidding;
+	b = bid_begin;
+	char id[5] = { 'M' };
+	char bid[100] = { '0' };
+	cout << "请输入您要修改出价的商品ID:";
+	cin >> id;
+	bool flage = 0;
+	while (b->next != NULL)
+	{
+		b = b->next;
+		if (strcmp(b->g_id, id) == 0&&strcmp(b->u_id,user->u_id)==0)
+		{
+			flage = 1;
+			break;
+		}
+	}
+	if (flage == 0)
+	{
+		cout << "您没有该商品的竞价！" << endl;
+		return;
+	}
+	cout << "请输入您修改后的竞价:";
+	cin >> bid;
+	Get_Goods_Message();
+	Good* g = new Good;
+	g = goods_message_buyer_begin;
+	while (g->next != NULL)
+	{
+		g = g->next;
+		if (strcmp(g->g_id, b->g_id) == 0)
+			break;
+	}
+	double money = 0, price = 0;
+	money = atof(b->bid);
+	price = atof(g->g_price);
+	if (money<price)
+	{
+		cout << "修改竞价失败!" << endl;
+		return;
+	}
+	Bidding* p = new Bidding;
+	p = bid_begin->next;
+	fstream outfile("bidding.txt", ios::out);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
+		exit(0);
+	}
+	while (p != NULL)
+	{
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time << endl;
+		p = p->next;
+	}
+	outfile.close();
+}
+void Buyers::Remove_Bid(User* user)
+{
+	Get_Bid();
+	Bidding* b = new Bidding;
+	Bidding* temp = new Bidding;
+	b = bid_begin;
+	temp = bid_begin;
+	char id[5] = { 'M' };
+	cout << "请输入您要取消出价的商品ID:";
+	cin >> id;
+	bool flage = 0;
+	while (b->next != NULL)
+	{
+		b = b->next;
+		if (strcmp(b->g_id, id) == 0&&strcmp(b->u_id,user->u_id)==0)
+		{
+			flage = 1;
+			break;
+		}
+		temp = b;
+	}
+	if (flage == 0)
+	{
+		cout << "您没有该商品的竞价！" << endl;
+		return;
+	}
+	cout << "取消出价成功！" << endl;
+	temp->next = b->next;
+	b = NULL;
+	delete b;
+	Bidding* p = new Bidding;
+	p = bid_begin->next;
+	fstream outfile("bidding.txt", ios::out);
+	if (!outfile)
+	{
+		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
+		exit(0);
+	}
+	while (p != NULL)
+	{
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time << endl;
+		p = p->next;
+	}
+	outfile.close();
+}
+//修改有小问题
 
 void Administrator::all_goods()
 {
@@ -1204,7 +1441,7 @@ void Administrator::search_goods()
 		while (p->next != NULL)
 		{
 			p = p->next;
-			if ((p->g_state == '1' || p->g_state == '2') && strcmp(input, p->g_id) == 0)
+			if ((strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0) && strcmp(input, p->g_id) == 0)
 			{
 				count++;
 				if (count == 1)
@@ -1212,7 +1449,7 @@ void Administrator::search_goods()
 					cout << "********************************************************************************" << endl;
 					cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态    商品类型" << endl;
 				}
-				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_buy_or_auction << endl;
+				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type << endl;
 			}
 		}
 		cout << "********************************************************************************" << endl;
@@ -1255,7 +1492,7 @@ void Administrator::search_goods()
 			}
 			get_next(T, next);
 			get_nextval(T, nextval);
-			if ((p->g_state == '1' || p->g_state == '2') && Index_KMP(S, T, 1, nextval) != 0)
+			if ((strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0) && Index_KMP(S, T, 1, nextval) != 0)
 			{
 				count++;
 				if (count == 1)
@@ -1263,7 +1500,7 @@ void Administrator::search_goods()
 					cout << "********************************************************************************" << endl;
 					cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态    商品类型" << endl;
 				}
-				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_buy_or_auction << endl;
+				cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type << endl;
 			}
 		}
 		cout << "********************************************************************************" << endl;
@@ -1398,7 +1635,7 @@ void Administrator::ban_user()
 		//exit(0);
 		return;
 	}
-	p->u_state = '2';
+	strcpy(p->u_state, "封禁");
 	User* a = new User;
 	//Achieve_Users_Message();
 	a = this->a_users_begin;
@@ -1481,7 +1718,7 @@ void Administrator::Achieve_Goods_Message()
 	while (!infile.eof())
 	{
 
-		infile >> p->g_id >> p->g_name >> p->g_price >>p->g_time>> p->g_number >> p->g_message >> p->g_seller >> p->g_state>>p->g_buy_or_auction;
+		infile >> p->g_id >> p->g_name >> p->g_price >>p->g_time>> p->g_number >> p->g_message >> p->g_seller >> p->g_state>>p->g_type;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -1507,7 +1744,7 @@ void Administrator::Updata_Goods()
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " " <<p->g_time<<" " << p->g_number << " " << p->g_message << " " << p->g_seller << " " << p->g_state<<" "<<p->g_buy_or_auction << endl;
+		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " " <<p->g_time<<" " << p->g_number << " " << p->g_message << " " << p->g_seller << " " << p->g_state<<" "<<p->g_type << endl;
 		p = p->next;
 	}
 	outfile.close();
@@ -1593,7 +1830,7 @@ void Auction_group::Withdraw_Message()
 {
 
 }
-void Auction_group::Assign_Goods(Message* q)
+/*void Auction_group::Assign_Goods(Message* q)
 {
 	Display_History_Message();
 	Message* p = new Message;
@@ -1623,8 +1860,6 @@ void Auction_group::Assign_Goods(Message* q)
 				if (strcmp(a->g_id, q->good_id) == 0)
 					break;
 			}
-			//maijia
-
 			double money, price;
 			int number;
 			money = strtod(t->u_money, NULL);
@@ -1632,11 +1867,9 @@ void Auction_group::Assign_Goods(Message* q)
 			number = atoi(a->g_number);
 			number--;
 			money -= price;
-			
-
 		}
 	}
-}
+}*/
 void Auction_group::Display_History_Message()
 {
 	Message* p, * q;
@@ -1658,7 +1891,7 @@ void Auction_group::Display_History_Message()
 	}
 	while (!infile.eof())
 	{
-		infile >> p->name >> p->nowtime >> p->content>>p->good_id>>p->bid;
+		infile >> p->name >> p->nowtime >> p->content;
 		if (infile.fail())
 			break;
 		q->next = new Message;
@@ -1697,26 +1930,26 @@ void Auction_group::Join_Group_Menu()
 			break;
 		case 2:Withdraw_Message(); break;
 		case 3:
-			if (nowuser->u_state == '1')
+			if (strcmp(nowuser->u_state,"买家")==0)
 				Join_Auction();
 			else
 				cout << "您没有参与竞拍的权限！" << endl;
 			break;
 		case 4:
-			if (nowuser->u_state == '2')
+			if (strcmp(nowuser->u_state,"卖家")==0)
 				Send_Goods();
 			else
 				cout << "您没有权限发布竞拍商品！" << endl;
 			break;
 		case 5:
-			if (nowuser->u_state == '1')
+			if (strcmp(nowuser->u_state,"买家")==0)
 			{
 				User* p = nowuser;
 				buyer->Get_Users_Message();
 				buyer->now_user = p;
 				buyer->Buyers_Module();
 			}
-			else if (nowuser->u_state == '2')
+			else if (strcmp(nowuser->u_state,"卖家")==0)
 			{
 				User* p = nowuser;
 				seller->Get_Users_Message();
@@ -1744,7 +1977,7 @@ void Auction_group::Store_Message()
 	while (p->next != NULL)
 	{
 		p = p->next;
-		outfile << p->name << " " << p->nowtime << " " <<p->content<<" " << p->good_id << " " << p->bid << endl;
+		outfile << p->name << " " << p->nowtime << " " <<p->content<<endl;
 	}
 	outfile.close();
 }
@@ -1756,20 +1989,20 @@ void Auction_group::Send_Goods()
 	Good* newgood = new Good;
 	newgood->cnt = member->goods_message_seller_end->cnt;
 	char opt = '0';
-	cout << "请输入需要竞拍的商品名称：";
+	cout << "请输入需要抢购的商品名称：";
 	cin >> newgood->g_name;
-	cout << "请输入需要竞拍的商品底价：";
+	cout << "请输入需要抢购的商品底价：";
 	cin >> newgood->g_price;
-	cout << "请输入需要竞拍的商品数量：";
+	cout << "请输入需要抢购的商品数量：";
 	cin >> newgood->g_number;
-	cout << "请输入需要竞拍的商品描述：";
+	cout << "请输入需要抢购的商品描述：";
 	cin >> newgood->g_message;
-	cout << endl;
 	newgood->cnt++;
 	newgood->g_id[1] = newgood->cnt / 100 + '0';
 	newgood->g_id[2] = (newgood->cnt % 100) / 10 + '0';
 	newgood->g_id[3] = newgood->cnt % 10 + '0';
-	newgood->g_buy_or_auction = '0';
+	strcpy(newgood->g_type, "抢购");
+	strcpy(newgood->g_state, "在售");
 	if (cin.fail())
 	{
 		cerr << "发布商品失败！";
@@ -1783,7 +2016,7 @@ void Auction_group::Send_Goods()
 	cout << "商品描述：" << newgood->g_message << endl;
 	cout << "***********************************************" << endl;
 	cout << endl;
-	cout << "您确认要将此商品用于竞拍吗？(y/n) ";
+	cout << "您确认要将此商品用于抢购吗？(y/n) ";
 	cin >> opt;
 	if (opt == 'y')
 	{
@@ -1796,17 +2029,17 @@ void Auction_group::Send_Goods()
 	else
 	{
 		cout << "取消发布商品" << endl;
-		exit(0);
+		return;
 	}
 	fstream outfile("good.txt", ios::app);
 	if (!outfile)
 	{
 		cout << "* * * 很遗憾，商品发布失败！* * *" << endl;
-		exit(0);
+		return;
 	}
 	if (newgood != NULL)
 	{
-		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " << newgood->g_time << " " << newgood->g_number << " " << newgood->g_message << " " << member->user_seller->u_id << " " << newgood->g_state << " " << newgood->g_buy_or_auction << endl;
+		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " << newgood->g_time << " " << newgood->g_number << " " << newgood->g_message << " " << member->user_seller->u_id << " " << newgood->g_state << " " << newgood->g_type << endl;
 		cout << "* * * 恭喜您，发布商品成功！* * *" << endl;
 		cout << "该商品的ID为：";
 		cout << newgood->g_id;
@@ -1814,30 +2047,30 @@ void Auction_group::Send_Goods()
 	outfile.close();
 	Sleep(500);
 	system("cls");
-	cout << "			欢迎来到竞拍群聊！					  " << endl;
-	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与竞拍 4.发布竞拍商品 5.退出群聊		 " << endl;
+	cout << "		欢迎来到竞拍群聊！					  " << endl;
+	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与抢购 4.发布竞拍商品 5.退出群聊		 " << endl;
 	Message* b = new Message;
 	end->next = new Message;
 	b = end->next;
 	char buf[400] = { '0' };
 	strcpy(b->name, member->user_seller->u_name);
 	strcpy(b->nowtime, newgood->g_time);
-	strcat(buf, "竞拍商品信息 商品ID:");
+	strcat(buf, "****");
+	strcat(buf, "抢购商品信息**商品ID:");
 	strcat(buf, newgood->g_id);
-	strcat(buf, " 商品名称:");
+	strcat(buf, "**商品名称:");
 	strcat(buf, newgood->g_name);
-	strcat(buf, " 商品底价:");
+	strcat(buf, "**商品价格:");
 	strcat(buf, newgood->g_price);
-	strcat(buf, " 商品数量:");
+	strcat(buf, "**商品数量:");
 	strcat(buf, newgood->g_number);
-	strcat(buf, " 商品信息:");
+	strcat(buf, "**商品信息:");
 	strcat(buf, newgood->g_message);
+	strcat(buf, "****");
 	for (int i = 0; i < strlen(buf); i++)
 	{
 		b->content[i] = buf[i+1];
 	}
-	strcpy(b->bid, "0");
-	strcpy(b->good_id, newgood->g_id);
 	b->next = NULL;
 	Store_Message();
 	Display_History_Message();
@@ -1846,15 +2079,8 @@ void Auction_group::Send_Goods()
 	while (t->next != NULL)
 	{
 		t = t->next;
-		//if (strcmp(t->good_id, "0") == 0) {
 		cout << t->nowtime << "\t" << "from user--" << t->name << "(goup-sent):\n";
 		cout << t->content << endl;
-		//}
-		//else
-		//{
-			//cout << t->nowtime << "\t" << "from user--" << t->name << "(goup-sent):\n";
-			//cout << "good for auction:" << t->good_id << "    " << "bid for good:" << t->bid << endl;
-		//}
 	}
 	delete newgood;
 }
@@ -1862,26 +2088,114 @@ void Auction_group::Join_Auction()
 {
 	Display_History_Message();
 	Message* p = new Message;
+	User* u = new User;
+	Order* o = new Order;
+	Good* g = new Good;
+	Buyers* b = new Buyers;
+	Sellers* s = new Sellers;
 	p = end;
 	end->next = new Message;
 	p = p->next;
-	double bid = 0;
+	int num = 0;
 	char id[5] = { 'M' };
-	cout << "请输入您要竞拍的商品的ID:";
+	cout << "请输入您要抢购的商品的ID:";
 	cin >> id;
-	cout << "请输入您的出价:";
-	cin >> bid;
+	cout << "请输入您要抢购的数量:";
+	cin >> num;
+	b->Get_Users_Message();
+	u = b->users_begin;
+	bool flage = 0;
+	while (u->next != NULL)
+	{
+		u = u->next;
+		if (strcmp(u->u_id, nowuser->u_id) == 0)
+		{
+			flage = 1;
+			break;
+		}
+	}
+	if (flage == 0)
+	{
+		cout << "查找用户失败" << endl;
+		return;
+	}
+	flage = 0;
+	s->Get_Goods_Message();
+	b->Get_Orders_Message();
+	b->order_end_buyer->next = new Order;
+	o = b->order_end_buyer->next;
+	g = s->goods_message_seller_begin;
+	while (g->next != NULL)
+	{
+		g = g->next;
+		if (strcmp(g->g_id, id) == 0)
+		{
+			flage = 1;
+			break;
+		}
+	}
+	if (flage == 0)
+	{
+		cout << "查找商品失败" << endl;
+		return;
+	}
+	if (strcmp(g->g_type, "抢购") != 0)
+	{
+		cout << "该商品不用于抢购！" << endl;
+		return;
+	}
+	double u_money = 0, g_money = 0;
+	u_money = atof(u->u_money);
+	g_money = atof(g->g_price);
+	int number = 0;
+	number = atoi(g->g_number);
+	char str1[100] = { '0' };
+	char str2[100] = { '0' };
+	if (u_money >= num * g_money&&number-num>=0)
+	{
+		sprintf(str1, "%.1lf", u_money - num * g_money);
+		sprintf(str2, "%d", number-num);
+		strcpy(g->g_number, str2);
+		strcpy(u->u_money, str1);
+		if (number == 0)
+			strcpy(g->g_state, "售空");
+		b->Update_message();
+		s->Updata_Goods_Message();
+	}
+	else
+	{
+		cout << "抢购失败" << endl;
+		return;
+	}
 	time_t now;
 	time(&now);
 	struct tm* tempTime = localtime(&now);
 	strftime(p->nowtime, 20, "[%H:%M:%S]", tempTime);
+	strftime(o->o_time, 20, "[%H:%M:%S]", tempTime);
 	char str[100];
-	sprintf(str, "%.1lf\t", bid);
+	sprintf(str, "%d", num);
 	strcpy(p->name, nowuser->u_name);
-	strcpy(p->bid, str);
-	strcpy(p->content, "0");
+	strcpy(p->content, "成功抢购");
+	strcat(p->content, str);
+	strcat(p->content, "件");
+	strcat(p->content, id);
+	p->next = NULL;
 	Message* q = new Message;
 	q = this->start;
+
+	o->cnt++;
+	o->o_id[1] = o->cnt / 100 + '0';
+	o->o_id[2] = (o->cnt % 100) / 10 + '0';
+	o->o_id[3] = o->cnt % 10 + '0';
+	_itoa(num, o->o_number, 10);
+	strcpy(o->buyer_id, nowuser->u_id);
+	strcpy(o->seller_id, g->g_seller);
+	strcpy(o->o_price, g->g_price);
+	strcpy(o->good_id, g->g_id);
+	b->order_end_buyer = o;
+	o->next = NULL;
+	b->Store_Orders();
+
 	fstream outfile("message.txt", ios::out);
 	if (!outfile)
 	{
@@ -1891,15 +2205,16 @@ void Auction_group::Join_Auction()
 	while (q->next != NULL)
 	{
 		q = q->next;
-		outfile << q->name << " " << q->nowtime << " "<<q->content<<" " << q->good_id << " " << q->bid << endl;
+		outfile << q->name << " " << q->nowtime << " "<<q->content<<endl;
 	}
 	outfile.close();
+	Cout_Message();
 }
 void Auction_group::Cout_Message()
 {
 	system("cls");
-	cout << "			欢迎来到竞拍群聊！					  " << endl;
-	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与竞拍 4.发布竞拍商品 5.退出群聊		 " << endl;
+	cout << "		欢迎来到竞拍群聊！					  " << endl;
+	cout << "	 你可以使用的指令: 1.发送信息 2.撤回 3.参与抢购 4.发布竞拍商品 5.退出群聊		 " << endl;
 	Display_History_Message();
 	Message* p = new Message;
 	p = start;
@@ -1909,12 +2224,6 @@ void Auction_group::Cout_Message()
 		//if (strcmp(p->good_id, "0") == 0) {
 		cout << p->nowtime << "\t" << "from user--" << p->name << "(goup-sent):\n";
 		cout << p->content << endl;
-		//}
-		//else
-		//{
-			//cout << p->nowtime << "\t" << "from user--" << p->name << "(goup-sent):\n";
-			//cout << "good for auction:" << p->good_id << "    " << "bid for good:" << p->bid << endl;
-		//}
 	}
 }
 void Auction_group::Sort_bid(Message*q)
@@ -1937,7 +2246,7 @@ void Users_Module(int st)
 	{
 		user.User_sign_up();
 		//system("cls");
-		cout << "请选择是否现在登录：1.登录 2.退出" << endl;
+		cout << "请选择是否现在登录:1.登录 2.退出" << endl;
 		cin >> flage;
 		if (flage == 1)
 			goto login;

@@ -10,11 +10,12 @@
 #include<conio.h>
 #include<map>
 #include<time.h>
+#include<ctime>
 using namespace std;
 int option;
 #define MAXLEN 200
 struct User {
-	char u_state = '1';				//用户的状态
+	char u_state[10] = "用户";		//用户的状态
 	char u_id[5] = { 'U' };			//用户的ID
 	char u_name[11] = { '0' };		//用户的名字
 	char u_phone[21] = { '0' };		//用户的电话
@@ -27,8 +28,8 @@ struct User {
 };
 //定义用户结构，用于存储用户的信息。
 struct Good {
-	char g_state = '1';				//商品的状态，1表示在售；2表示已售空；3表示下架；
-	char g_buy_or_auction = '1';	//商品是竞拍0还是直接售卖1
+	char g_state[10] = "在售";		//商品的状态，1表示在售；2表示已售空；3表示下架；
+	char g_type[10] ="直售";		//商品是竞拍0还是直接售卖1抢购是2
 	char g_id[5] = { 'M' };			//商品的ID
 	char g_name[21] = { '0' };		//商品名称
 	char g_price[100] = { '0' };	//商品的底价
@@ -55,35 +56,21 @@ struct Order {
 //定义订单的结构，存储订单的信息。
 struct Message
 {
-	char content[400] = { '0' };		//信息的内容
+	char content[400] = {'0'};		//信息的内容
 	char nowtime[20] = { '0' };		//信息的时间
 	char name[11] = { '0' };		//发信息的人
-	char bid[10] = { '0' };
-	char good_id[5] = {'M'};
 	Message* next;					//下一条信息
 };
 //定义消息的结构，用于创建拍卖群消息链表，存储聊天信息
-
-class Auction_group
+struct Bidding
 {
-public:
-	void Send_Message();			//发送信息
-	void Withdraw_Message();		//规定用户只能撤回2分钟内的信息
-	void Assign_Goods(Message*q);			//根据拍卖结果分配商品并扣除相关金额
-	void Display_History_Message();	//显示历史信息
-	void Store_Message();			//存储信息
-	void Join_Group_Menu();			//拍卖群主页面
-	void Send_Goods();				//发布竞拍商品
-	void Join_Auction();			//参与竞拍
-	void Cout_Message();			//输出
-	void Sort_bid(Message*q);		//排序出价
-	Message* start;					//信息头
-	Message* end;					//信息尾
-	Message* now;					//当前信息
-	User* nowuser;					//当前用户
-	Message* sort;
+	char g_id[5] = { 'M' };			//商品ID
+	char u_id[5] = { 'U' };			//用户ID
+	char bid[100] = { '0' };		//用户出价
+	char number[5] = { '0' };		//数量
+	char time[100] = { '0' };		//时间
+	Bidding* next;
 };
-
 
 
 class Users//:public Sellers,public Buyers
@@ -98,8 +85,6 @@ public:
 	void Change_name();			//修改用户名
 	void Change_phone();		//修改手机号
 	void Add_money();			//充值
-	void Change_bid();			//修改报价
-	void Cancel_bid();			//取消报价
 	void Get_Users_Message();   //从user文件中获取信息
 	void Update_message();		//更新文件中的信息
 	void User_Menu();			//用户功能菜单
@@ -115,7 +100,7 @@ public:
 
 
 
-class Administrator:public Auction_group
+class Administrator//:public Auction_group
 {
 public:
 	void all_goods();				//查看所有的商品
@@ -138,7 +123,7 @@ public:
 	char a_password[21];
 };
 //管理员类。
-class Buyers :public Users,public Auction_group
+class Buyers :public Users//,public Auction_group
 {
 public:
 	void Search_all_Goods();			//查看商品列表
@@ -150,6 +135,10 @@ public:
 	void Get_Orders_Message();			//从order文件中获取信息
 	void Store_Orders();				//存储订单信息
 	void Buyer_nemu();					//菜单
+	void Bid(User*user);				//竞价
+	void Get_Bid();						//获取竞价
+	void Change_Bid(User*user);					//修改竞价
+	void Remove_Bid(User*user);					//取消竞价
 	User* user_buyer;					//指出当前买家用户
 	Good* goods_message_buyer_begin;	//读取商品信息
 	Good* goods_message_buyer_end;		//读取商品信息
@@ -157,9 +146,11 @@ public:
 	Order* orders_message_buyer;		//读取订单信息
 	Order* orders_begin_buyer;
 	Order* order_end_buyer;
+	Bidding* bid_begin;					//读取竞价信息头
+	Bidding* bid_end;					//读取竞价信息尾
 };
 //买家类。
-class Sellers :public Users,public Auction_group
+class Sellers :public Users//,public Auction_group
 {
 public:
 	void List_Good(User* p);		//发布商品
@@ -180,6 +171,27 @@ public:
 	Order* order_end_seller;
 };
 //卖家类。
+
+class Auction_group
+{
+public:
+	void Send_Message();			//发送信息
+	void Withdraw_Message();		//规定用户只能撤回2分钟内的信息
+	void Assign_Goods(Message* q);			//根据拍卖结果分配商品并扣除相关金额
+	void Display_History_Message();	//显示历史信息
+	void Store_Message();			//存储信息
+	void Join_Group_Menu();			//拍卖群主页面
+	void Send_Goods();				//发布竞拍商品
+	void Join_Auction();			//参与竞拍
+	void Cout_Message();			//输出
+	void Sort_bid(Message* q);		//排序出价
+	Message* start;					//信息头
+	Message* end;					//信息尾
+	Message* now;					//当前信息
+	User* nowuser;					//当前用户
+	Message* sort;
+};
+
 
 typedef struct
 {
@@ -254,7 +266,7 @@ void get_nextval(SString T, int nextval[])
 	}
 }
 
-class Sort {
+/*class Sort {
 public:
 	void bubbleSort(Message* head, int n) {
 		double b1,b2;
@@ -288,7 +300,7 @@ public:
 	}
 };
 
-
+*/
 
 
 /*

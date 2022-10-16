@@ -1,12 +1,12 @@
 ﻿D:\Microsoft Visual Studio\IDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(514,5): warning MSB8028: 中间目录(x64\Debug\)包含从另一个项目(交易平台.vcxproj)共享的文件。   这会导致错误的清除和重新生成行为。
   Commodity Auction Platform.cpp
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1000,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1005,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1013,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1018,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1236,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1241,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1249,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1254,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1580,7): warning C4101: “buf”: 未引用的局部变量
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1029,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1034,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1042,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1047,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1472,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1477,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1485,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1490,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1816,7): warning C4101: “buf”: 未引用的局部变量
   交易平台.vcxproj -> C:\Users\2931582547\Desktop\my program\交易平台\x64\Debug\商品竞拍平台.exe
