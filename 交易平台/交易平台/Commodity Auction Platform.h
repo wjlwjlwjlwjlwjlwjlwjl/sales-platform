@@ -14,6 +14,8 @@
 using namespace std;
 int option;
 #define MAXLEN 200
+#define offset 300
+
 struct User {
 	char u_state[10] = "用户";		//用户的状态
 	char u_id[5] = { 'U' };			//用户的ID
@@ -23,6 +25,8 @@ struct User {
 	char u_adress[41] = { '0' };	//用户的地址
 	char u_password[21] = { '0' };	//用户的密码
 	char u_bid[100] = { '0' };		//用户出价
+	char credibility[100] = { '0' };	//用户的信誉
+	int count=0;					//竞拍商品数
 	User* next;						//用于创建存储文件中用户信息的链表
 	int cnt = 1;					//用于给用户分配ID
 };
@@ -33,11 +37,11 @@ struct Good {
 	char g_id[5] = { 'M' };			//商品的ID
 	char g_name[21] = { '0' };		//商品名称
 	char g_price[100] = { '0' };	//商品的底价
-	char g_time[20] = { '0' };		//商品上架的时间
+	char g_time[100] = { '0' };		//商品上架的时间
 	char g_seller[5] = { 'U' };		//商品卖家的ID
 	char g_number[20] = { '0' };	//商品的余量
 	char g_message[201] = { '0' };	//商品信息	
-	char g_progress[20] = { '0' };	//商品的竞拍进程（24小时结束）
+	char endtime[100] = { '0' };	//结束时间
 	Good* next;						//用于创建存储文件中商品信息的链表
 	int cnt = 1;					//用于给商品分配ID
 };
@@ -69,6 +73,7 @@ struct Bidding
 	char bid[100] = { '0' };		//用户出价
 	char number[5] = { '0' };		//数量
 	char time[100] = { '0' };		//时间
+	char state[10] = { '0' };		//状态
 	Bidding* next;
 };
 
@@ -115,9 +120,9 @@ public:
 	void Updata_Users();			//更新用户信息
 	void Delete_Message();			//删除信息
 	void Admin_nemu();				//菜单
-	Good* a_goods_begin;				//商品开始
+	Good* a_goods_begin;			//商品开始
 	Good* a_goods_end;				//商品结束
-	User* a_users_begin;				//用户开始
+	User* a_users_begin;			//用户开始
 	User* a_users_end;				//用户结束
 	char a_name[11];
 	char a_password[21];
@@ -136,9 +141,10 @@ public:
 	void Store_Orders();				//存储订单信息
 	void Buyer_nemu();					//菜单
 	void Bid(User*user);				//竞价
-	void Get_Bid();						//获取竞价
-	void Change_Bid(User*user);					//修改竞价
-	void Remove_Bid(User*user);					//取消竞价
+	void Get_Bid(User*user);						//获取竞价
+	void Change_Bid(User*user);			//修改竞价
+	void Remove_Bid(User*user);			//取消竞价
+	void Bid_nemu(User* user);			//菜单
 	User* user_buyer;					//指出当前买家用户
 	Good* goods_message_buyer_begin;	//读取商品信息
 	Good* goods_message_buyer_end;		//读取商品信息
@@ -148,6 +154,8 @@ public:
 	Order* order_end_buyer;
 	Bidding* bid_begin;					//读取竞价信息头
 	Bidding* bid_end;					//读取竞价信息尾
+	Bidding* begin;						//竞价的商品
+	Bidding* end;						//竞价的商品
 };
 //买家类。
 class Sellers :public Users//,public Auction_group
@@ -184,7 +192,6 @@ public:
 	void Send_Goods();				//发布竞拍商品
 	void Join_Auction();			//参与竞拍
 	void Cout_Message();			//输出
-	void Sort_bid(Message* q);		//排序出价
 	Message* start;					//信息头
 	Message* end;					//信息尾
 	Message* now;					//当前信息
@@ -266,49 +273,131 @@ void get_nextval(SString T, int nextval[])
 	}
 }
 
-/*class Sort {
-public:
-	void bubbleSort(Message* head, int n) {
-		double b1,b2;
-		if (!head || !head->next) return;
-		for (int i = 0; i < n; ++i) {
-			auto pre = head;
-			auto cur = head->next;
-			bool flag = 0;
-			for (int j = 0; j < n - i - 1; ++j) {
-				b1=strtod(pre->bid, NULL);
-				b2 = strtod(cur->bid, NULL);
-				if (cur != NULL && b1 > b2) {
-					swap(pre, cur);
-					flag = 1;
+
+bool compare(char time1[], char time2[])
+{
+	int year1 = 0, month1 = 0, day1 = 0, hour1 = 0, minute1 = 0, mis1 = 0;
+	int year2 = 0, month2 = 0, day2 = 0, hour2 = 0, minute2 = 0, mis2 = 0;
+	int cnt1 = 1, cnt2 = 1;
+	int i = 0;
+	int j = 0;
+	while (cnt1 < 6)
+	{
+		if (time1[i] == '[')
+			i++;
+		char str1[10] = { '0' };
+		int count = 0;
+		while (time1[i]!='-'&&time1[i]!=':'&&time1[i] != ']')
+		{
+			str1[count] = time1[i];
+			i++;
+			count++;
+		}
+		i++;
+		if (cnt1 == 1)
+			year1 = atoi(str1);
+		else if (cnt1 == 2)
+			month1 = atoi(str1);
+		else if(cnt1==3)
+			day1= atoi(str1);
+		else if(cnt1==4)
+			hour1= atoi(str1);
+		else if(cnt1==5)
+			minute1= atoi(str1);
+		else if(cnt1==6)
+			mis1= atoi(str1);
+		cnt1++;
+	}
+	while (cnt2 < 6)
+	{
+		if (time2[j] == '[')
+			j++;
+		char str2[10] = { '0' };
+		int count = 0;
+		while (time2[j] != '-' && time2[j] != ':' && time2[j] != ']')
+		{
+			str2[count] = time2[j];
+			count++;
+			j++;
+		}
+		j++;
+		if (cnt2 == 1)
+			year2 = atoi(str2);
+		else if (cnt2 == 2)
+			month2 = atoi(str2);
+		else if (cnt2 == 3)
+			day2 = atoi(str2);
+		else if (cnt2 == 4)
+			hour2 = atoi(str2);
+		else if (cnt2 == 5)
+			minute2 = atoi(str2);
+		else if (cnt2 == 6)
+			mis2 = atoi(str2);
+		cnt2++;
+	}
+	if (year1 > year2)
+		return true;
+	else if (year1 < year2)
+		return false;
+	else
+	{
+		if (month1 > month2)
+			return true;
+		else if (month1 < month2)
+			return false;
+		else
+		{
+			if (day1 > day2)
+				return true;
+			else if (day1 < day2)
+				return false;
+			else
+			{
+				if (hour1 > hour2)
+					return true;
+				else if (hour1 < hour2)
+					return false;
+				else
+				{
+					if (minute1 > minute2)
+						return true;
+					else if (minute1 < minute2)
+						return false;
+					else
+					{
+						if (mis1 > mis2)
+							return true;
+						else if (mis1 <= mis2)
+							return false;
+					}
 				}
-				pre = pre->next;
-				cur = cur->next;
 			}
-			if (!flag)   break;
 		}
 	}
-	Message* sortList(Message* head) {
-		auto p = head;
-		int n = 0; // 记录节点个数
-		while (p != NULL) {
-			++n;
+}
+//比较时间大小，time1>time2,返回1;
+
+Bidding* SortList(Bidding* head) {
+	if (head == NULL || head->next == NULL)return head;
+	Bidding* pos = new Bidding;
+	pos = head;
+	while (pos->next != NULL)
+	{
+		Bidding* max = pos->next, * p = pos->next->next;
+		while (p != NULL)
+		{
+			if (p->bid > max->bid)
+				max = p;
 			p = p->next;
 		}
-		bubbleSort(head, n);
-		return head;
+		swap(max->bid, pos->next->bid);
+		swap(max->g_id, pos->next->g_id);
+		swap(max->number, pos->next->number);
+		swap(max->u_id, pos->next->number);
+		swap(max->time, pos->next->time);
+		swap(max->time, pos->next->time);
+		pos = pos->next;
 	}
-};
-
-*/
-
-
-/*
-void xy(int y, int x)
-{
-	COORD  coord;
-	coord.X = x;
-	coord.Y = y;
-	HANDLE a = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleCursorPosition(a, coord);
-}*/
+	delete pos;
+	return head;
+}

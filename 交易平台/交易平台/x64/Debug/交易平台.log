@@ -1,12 +1,15 @@
 ﻿D:\Microsoft Visual Studio\IDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(514,5): warning MSB8028: 中间目录(x64\Debug\)包含从另一个项目(交易平台.vcxproj)共享的文件。   这会导致错误的清除和重新生成行为。
   Commodity Auction Platform.cpp
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1029,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1034,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1042,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1047,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1472,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1477,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1485,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1490,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1816,7): warning C4101: “buf”: 未引用的局部变量
-  交易平台.vcxproj -> C:\Users\2931582547\Desktop\my program\交易平台\x64\Debug\商品竞拍平台.exe
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1023,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1028,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1036,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1041,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1088,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1572,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1577,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1585,29): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1590,33): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(1916,7): warning C4101: “buf”: 未引用的局部变量
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(2238,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(2238,11): error C2001: 常量中有换行符
+C:\Users\2931582547\Desktop\my program\交易平台\交易平台\Commodity Auction Platform.cpp(2239,3): error C2143: 语法错误: 缺少“;”(在“return”的前面)

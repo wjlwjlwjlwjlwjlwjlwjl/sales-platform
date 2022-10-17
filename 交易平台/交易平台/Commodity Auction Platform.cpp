@@ -7,9 +7,9 @@ void Users::Buyers_Module()
 	Auction_group* group = new Auction_group;
 	group->nowuser = now_user;
 	system("cls");
-	cout << "=============================================================================================================================================" << endl;
-	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.参与竞拍 6.修改出价 7.取消出价 8.查看历史订单 9.查看商品详细信息 10.返回用户主界面" << endl;
-	cout << "=============================================================================================================================================" << endl;
+	cout << "======================================================================================================================" << endl;
+	cout << "  1.查看商品列表 2.加入竞拍群聊 3.搜索商品 4.购买商品 5.参与竞拍 6.查看历史订单 7.查看商品详细信息 8.返回用户主界面" << endl;
+	cout << "======================================================================================================================" << endl;
 	strcpy(now_user->u_state, "买家");
 	Update_message();
 	option = 0;
@@ -45,32 +45,22 @@ void Users::Buyers_Module()
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 5:user->Bid(now_user);
+	case 5:user->Bid_nemu(now_user);
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 6:user->Change_Bid(now_user);
+	case 6:user->B_Histroy_Orders();
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 7:user->Remove_Bid(now_user);
+	case 7:user->Good_Message(); 
 		cout << "请输入操作:";
 		cin >> option;
 		user->Buyer_nemu();
 		goto l;
-	case 8:user->B_Histroy_Orders();
-		cout << "请输入操作:";
-		cin >> option;
-		user->Buyer_nemu();
-		goto l;
-	case 9:user->Good_Message(); 
-		cout << "请输入操作:";
-		cin >> option;
-		user->Buyer_nemu();
-		goto l;
-	case 10:User_Menu(); 
+	case 8:User_Menu(); 
 		break;
 	default:cout << "输入指令错误！" << endl; break;
 	}
@@ -206,6 +196,7 @@ l:
 	someone->u_id[1] = someone->cnt / 100 + '0';
 	someone->u_id[2] = (someone->cnt % 100) / 10 + '0';
 	someone->u_id[3] = someone->cnt % 10 + '0';
+	strcpy(someone->credibility, "10");
 	fstream outfile("user.txt", ios::app);
 	if (!outfile)
 	{
@@ -214,7 +205,7 @@ l:
 	}
 	if (someone != NULL)
 	{
-		outfile << someone->u_id << " " << someone->u_name << " " << someone->u_phone << " " << someone->u_adress << " " << someone->u_password << " " << someone->u_state << " " << someone->u_money << endl;
+		outfile << someone->u_id << " " << someone->u_name << " " << someone->u_phone << " " << someone->u_adress << " " << someone->u_password << " " << someone->u_state << " " << someone->u_money <<" "<<someone->credibility << endl;
 		cout << "* * * 恭喜您，用户注册成功！* * *" << endl;
 		cout << "系统为您生成的ID为：";
 		cout << someone->u_id;
@@ -248,7 +239,7 @@ void Users::Get_Users_Message()
 	}
 	while (!infile.eof())
 	{
-		infile >> p->u_id >> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money;
+		infile >> p->u_id >> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money >> p->credibility;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -424,17 +415,17 @@ void Users::Change_password()
 void Users::Update_message()
 {
 	User* p = new User;
-	p = this->users_begin->next;
+	p = this->users_begin;
 	fstream outfile("user.txt", ios::out);
 	if (!outfile)
 	{
 		cout << "* * * 很遗憾，数据保存失败！* * *" << endl;
 		exit(0);
 	}
-	while (p != NULL)
+	while (p->next != NULL)
 	{
-		outfile << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money << endl;
 		p = p->next;
+		outfile << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money << " " << p->credibility << endl;
 	}
 	outfile.close();
 }
@@ -496,10 +487,11 @@ void Sellers::List_Good(User* p)
 	}
 	cout << "请确认发布的商品信息无误！" << endl;
 	cout << "***********************************************" << endl;
-	cout << "商品名称：" << newgood->g_name << endl;
-	cout << "商品价格：" << newgood->g_price << endl;
-	cout << "商品数量：" << newgood->g_number << endl;
-	cout << "商品描述：" << newgood->g_message << endl;
+	cout << "商品名称:" << newgood->g_name << endl;
+	cout << "商品价格:" << newgood->g_price << endl;
+	cout << "商品数量:" << newgood->g_number << endl;
+	cout << "商品描述:" << newgood->g_message << endl;
+	cout << "商品类型:" << newgood->g_time << endl;
 	cout << "***********************************************" << endl;
 	cout << endl;
 	cout << "您确认要发布商品吗？(y/n) ";
@@ -507,16 +499,18 @@ void Sellers::List_Good(User* p)
 	if (opt == 'y')
 	{
 		cout << "确认发布商品" << endl;
-		/*time_t now;
+		time_t now;
 		time(&now);
 		struct tm* tempTime = localtime(&now);
-		strftime(newgood->g_time, 20, "[%H:%M:%S]", tempTime);
+		strftime(newgood->g_time, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
 		if (strcmp(newgood->g_type, "竞拍") == 0)
 		{
-			time_t now = time(0);
-			cout << "1970 到目前经过秒数:" << now << endl;
-			tm* ltm = localtime(&now);
-		}*/
+			now += offset;
+			tempTime = localtime(&now);
+			strftime(newgood->endtime, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
+		}
+		else
+			strcpy(newgood->endtime, "forever");
 	}
 	else
 	{
@@ -532,7 +526,7 @@ void Sellers::List_Good(User* p)
 	}
 	if (newgood != NULL)
 	{
-		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " <<newgood->g_time<<" " << newgood->g_number << " " << newgood->g_message << " " << user_seller->u_id << " " << newgood->g_state <<" "<<newgood->g_type << endl;
+		outfile << newgood->g_id << " " << newgood->g_name << " " << newgood->g_price << " " <<newgood->g_time<<" " << newgood->g_number << " " << newgood->g_message << " " << user_seller->u_id << " " << newgood->g_state <<" "<<newgood->g_type <<" " <<newgood->endtime<< endl;
 		cout << "* * * 恭喜您，发布商品成功！* * *" << endl;
 		cout << "该商品的ID为：";
 		cout << newgood->g_id << endl;
@@ -756,7 +750,7 @@ void Sellers::Get_Goods_Message()
 	while (!infile.eof())
 	{
 
-		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_time >> p->g_number >> p->g_message >> p->g_seller >> p->g_state >> p->g_type;
+		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_time >> p->g_number >> p->g_message >> p->g_seller >> p->g_state >> p->g_type >> p->endtime;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -827,7 +821,7 @@ void Sellers::Updata_Goods_Message()
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " "<<p->g_time<<" " << p->g_number << " " << p->g_message << " " << p->g_seller << " " << p->g_state <<" "<<p->g_type<< endl;
+		outfile << p->g_id << " " << p->g_name << " " << p->g_price << " "<<p->g_time<<" " << p->g_number << " " << p->g_message << " " << p->g_seller << " " << p->g_state <<" "<<p->g_type<<" "<<p->endtime<< endl;
 		p = p->next;
 	}
 	outfile.close();
@@ -844,13 +838,13 @@ void Buyers::Search_all_Goods()
 {
 	Get_Goods_Message();
 	cout << "********************************************************************************" << endl;
-	cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态" << endl;
+	cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态   商品类型   结束时间" << endl;
 	Good* p = goods_message_buyer_begin;
 	while (p->next != NULL)
 	{
 		p = p->next;
 		if (strcmp(p->g_state,"在售")==0 || strcmp(p->g_state,"售空")==0)
-			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state << p->g_type << endl;
+			cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_time << "     " << p->g_number << "  " << p->g_seller << "  " << p->g_state <<"  " << p->g_type <<"  "<<p->endtime <<endl;
 	}
 	cout << "********************************************************************************" << endl;
 }
@@ -965,7 +959,7 @@ void Buyers::Buy_Good()
 			time_t now;
 			time(&now);
 			struct tm* tempTime = localtime(&now);
-			strftime(o->o_time, 20, "[%H:%M:%S]", tempTime);
+			strftime(o->o_time, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
 			strcpy(o->o_price, p->g_price);
 			strcpy(o->good_id, p->g_id);
 			order_end_buyer = o;
@@ -1124,7 +1118,7 @@ void Buyers::Get_Goods_Message()
 	while (!infile.eof())
 	{
 
-		infile >> p->g_id >> p->g_name >> p->g_price >>p->g_time>> p->g_number >> p->g_message >> p->g_seller >> p->g_state>> p->g_type;
+		infile >> p->g_id >> p->g_name >> p->g_price >> p->g_time >> p->g_number >> p->g_message >> p->g_seller >> p->g_state >> p->g_type >> p->endtime;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -1208,7 +1202,7 @@ void Buyers::Buyer_nemu()
 }
 void Buyers::Bid(User*user)
 {
-	Get_Bid();
+	Get_Bid(user);
 	Get_Goods_Message();
 	user_buyer = user;
 	Bidding* newbid = new Bidding;
@@ -1223,7 +1217,7 @@ void Buyers::Bid(User*user)
 	time_t now;
 	time(&now);
 	struct tm* tempTime = localtime(&now);
-	strftime(newbid->time, 20, "[%H:%M:%S]", tempTime);
+	strftime(newbid->time, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
 	Good* g = new Good;
 	g = goods_message_buyer_begin;
 	int flage = 0;
@@ -1239,6 +1233,11 @@ void Buyers::Bid(User*user)
 	if (flage == 0)
 	{
 		cout << "没有找到该商品！" << endl;
+		return;
+	}
+	if (compare(newbid->time, g->endtime))
+	{
+		cout << "已经超过该商品的竞拍时限!" << endl;
 		return;
 	}
 	if (strcmp(g->g_type, "竞拍") != 0)
@@ -1257,6 +1256,8 @@ void Buyers::Bid(User*user)
 		cout << "竞拍失败!" << endl;
 		return;
 	}
+	cout << "参与竞拍成功!" << endl;
+	user->count++;
 	strcpy(newbid->u_id, user_buyer->u_id);
 	bid_end = bid_end->next;
 	bid_end->next = NULL;
@@ -1270,12 +1271,93 @@ void Buyers::Bid(User*user)
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number <<" "<<p->time << endl;
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number <<" "<<p->time <<" "<<p->state<< endl;
 		p = p->next;
 	}
 	outfile.close();
 }
-void Buyers::Get_Bid()
+void Buyers::Bid_nemu(User* user)
+{
+	Users* u = new Users;
+	u->Get_Users_Message();
+	u->now_user = user;
+	int opt = 0;
+	system("cls");
+	cout << "====================================================" << endl;
+	cout << "  1.竞拍商品 2.修改竞价 3.取消竞价 4.返回买家首页" << endl;
+	cout << "====================================================" << endl;
+	cout << "您目前参与了" << user->count << "件商品的竞拍" << endl;
+	char str[100] = { '0' };
+	int choose=0;
+	time_t now;
+	time(&now);
+	struct tm* tempTime = localtime(&now);
+	strftime(str, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
+	if (user->cnt > 0)
+	{
+		Get_Bid(user);
+		Bidding* p = new Bidding;
+		p = SortList(bid_begin);
+		while (p->next != NULL)
+		{
+			p = p->next;
+			if (strcmp(p->u_id, user->u_id) == 0&&strcmp(p->state,"进行中")==0)
+			{
+				if (compare(str, p->time))
+				{
+					cout << "恭喜您成功竞拍到ID为" << p->g_id << "的商品，请您选择是否支付商品的费用: 1.支付 2.取消 (如果取消的话会使您的信誉受损)" << endl;
+					cout << "请输入操作:";
+					cin >> choose;
+					if (choose == 1)
+					{
+
+					}
+					else
+					{
+						int c = atoi(user->credibility);
+						c--;
+						sprintf(user->credibility, "%d", c);
+						u->Update_message();
+					}
+				}
+			}
+		}
+	}
+
+
+
+	cout << "请输入操作:";
+	cin >> opt;
+lm:
+
+	while (cin.fail())
+	{
+		cerr << "输入错误，请重新输入：";
+		cin.clear();
+		cin.ignore();
+		cin >> opt;
+	}
+	switch (opt)
+	{
+	case 1:Bid(user);
+		cout << "请输入操作:";
+		cin >> opt;
+		goto lm;
+	case 2:Change_Bid(user);
+		cout << "请输入操作:";
+		cin >> opt;
+		goto lm;
+	case 3:Remove_Bid(user);
+		cout << "请输入操作:";
+		cin >> opt;
+		goto lm;
+	case 4:u->Buyers_Module();
+		break;
+	default:cout << "输入指令错误！" << endl; break;
+	}
+	goto lm;
+}
+void Buyers::Get_Bid(User*user)
 {
 	Bidding* p, * q;
 	p = new Bidding;
@@ -1283,6 +1365,12 @@ void Buyers::Get_Bid()
 	bid_end = new Bidding;
 	bid_end->next = NULL;
 	q = bid_begin;
+	Bidding* a, * b;
+	a = new Bidding;
+	begin = new Bidding;
+	end = new Bidding;
+	end->next = NULL;
+	b = begin;
 	ifstream infile("bidding.txt", ios::in | ios::binary);
 	if (!infile)
 	{
@@ -1297,14 +1385,24 @@ void Buyers::Get_Bid()
 	}
 	while (!infile.eof())
 	{
-		infile >> p->g_id >> p->u_id >> p->bid >> p->number >> p->time;
+		infile >> p->g_id >> p->u_id >> p->bid >> p->number >> p->time >> p->state;
 		if (infile.fail())
 			break;
+		if (strcmp(p->u_id, user->u_id) == 0)
+		{
+			a = p;
+			a->next = NULL;
+			b->next = a;
+			b = b->next;
+			a = new Bidding;
+		}
 		p->next = NULL;
 		q->next = p;
 		q = q->next;
 		p = new Bidding;
 	}
+	end = b;
+	b->next = NULL;
 	bid_end = q;
 	q->next = NULL;
 	infile.close();
@@ -1312,7 +1410,7 @@ void Buyers::Get_Bid()
 }
 void Buyers::Change_Bid(User* user)
 {
-	Get_Bid();
+	Get_Bid(user);
 	Bidding* b = new Bidding;
 	b = bid_begin;
 	char id[5] = { 'M' };
@@ -1345,6 +1443,7 @@ void Buyers::Change_Bid(User* user)
 		if (strcmp(g->g_id, b->g_id) == 0)
 			break;
 	}
+	strcpy(b->bid, bid);
 	double money = 0, price = 0;
 	money = atof(b->bid);
 	price = atof(g->g_price);
@@ -1353,6 +1452,7 @@ void Buyers::Change_Bid(User* user)
 		cout << "修改竞价失败!" << endl;
 		return;
 	}
+	cout << "修改成功!" << endl;
 	Bidding* p = new Bidding;
 	p = bid_begin->next;
 	fstream outfile("bidding.txt", ios::out);
@@ -1363,14 +1463,14 @@ void Buyers::Change_Bid(User* user)
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time << endl;
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time <<" "<<p->state<< endl;
 		p = p->next;
 	}
 	outfile.close();
 }
 void Buyers::Remove_Bid(User* user)
 {
-	Get_Bid();
+	Get_Bid(user);
 	Bidding* b = new Bidding;
 	Bidding* temp = new Bidding;
 	b = bid_begin;
@@ -1408,23 +1508,22 @@ void Buyers::Remove_Bid(User* user)
 	}
 	while (p != NULL)
 	{
-		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time << endl;
+		outfile << p->g_id << " " << p->u_id << " " << p->bid << " " << p->number << " " << p->time << " "<<p->state<<endl;
 		p = p->next;
 	}
 	outfile.close();
 }
-//修改有小问题
 
 void Administrator::all_goods()
 {
 	Achieve_Goods_Message();
 	cout << "********************************************************************************" << endl;
-	cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态" << endl;
+	cout << "  商品ID	名称	价格	上架时间	数量	卖家ID	  商品状态    结束时间" << endl;
 	Good* p = a_goods_begin;
 	while (p->next != NULL)
 	{
 		p = p->next;
-		cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_number << "  " << p->g_seller << "  " << p->g_state << endl;
+		cout << p->g_id << "  " << p->g_name << "  " << p->g_price << "         " << p->g_number << "  " << p->g_seller << "  " << p->g_state <<"  "<<p->endtime <<endl;
 	}
 	cout << "********************************************************************************" << endl;
 }
@@ -1586,7 +1685,7 @@ void Administrator::all_users()
 	cout << "用户ID" << "  " << "用户名" << "  " << "联系方式" << "  " << "地址" << "  " << "钱包余额" << "  " << "用户状态" << endl;
 	while (p != NULL)
 	{
-		cout << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_money << " " << p->u_state << endl;
+		cout << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_money << " " << p->u_state <<" "<<p->credibility<< endl;
 		p = p->next;
 	}
 	cout << "*************************************************************************" << endl;
@@ -1621,8 +1720,8 @@ void Administrator::ban_user()
 	}
 	cout << "确认要封禁该用户吗？" << endl;
 	cout << "*************************************************************************" << endl;
-	cout << "用户ID" << "  " << "用户名" << "  " << "联系方式" << "  " << "地址" << "  " << "钱包余额" << "  " << "用户状态" << endl;
-	cout << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_money << " " << p->u_state << endl;
+	cout << "用户ID" << "  " << "用户名" << "  " << "联系方式" << "  " << "地址" << "  " << "钱包余额" << "  " << "用户状态" << "  " << "用户信誉" << endl;
+	cout << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_money << " " << p->u_state << " " << p->credibility << endl;
 	cout << "*************************************************************************" << endl;
 	cout << "请选择(y/n)：";
 	cin >> opt;
@@ -1651,7 +1750,7 @@ void Administrator::ban_user()
 	while (a->next != NULL)
 	{
 		a = a->next;
-		outfile1 << a->u_id << " " << a->u_name << " " << a->u_phone << " " << a->u_adress << " " << a->u_password << " " << a->u_state << " " << a->u_money << endl;
+		outfile1 << a->u_id << " " << a->u_name << " " << a->u_phone << " " << a->u_adress << " " << a->u_password << " " << a->u_state << " " << a->u_money <<" "<<a->credibility<< endl;
 	}
 	outfile1.close();
 	Achieve_Goods_Message();
@@ -1768,7 +1867,7 @@ void Administrator::Achieve_Users_Message()
 	}
 	while (!infile.eof())
 	{
-		infile >> p->u_id >> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money;
+		infile >> p->u_id >> p->u_name >> p->u_phone >> p->u_adress >> p->u_password >> p->u_state >> p->u_money >> p->credibility;
 		if (infile.fail())
 			break;
 		p->next = NULL;
@@ -1795,7 +1894,7 @@ void Administrator::Updata_Users()
 	}
 	while (p != NULL)
 	{
-		outfile << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money << endl;
+		outfile << p->u_id << " " << p->u_name << " " << p->u_phone << " " << p->u_adress << " " << p->u_password << " " << p->u_state << " " << p->u_money <<" "<<p->credibility << endl;
 		p = p->next;
 	}
 	outfile.close();
@@ -1818,7 +1917,7 @@ void Auction_group::Send_Message()
 	time_t now;
 	time(&now);
 	struct tm* tempTime = localtime(&now);
-	strftime(p->nowtime, 20, "[%H:%M:%S]", tempTime);
+	strftime(p->nowtime, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
 	cin >> p->content;
 	strcpy(p->name, nowuser->u_name);
 	end = p;
@@ -2024,7 +2123,7 @@ void Auction_group::Send_Goods()
 		time_t now;
 		time(&now);
 		struct tm* tempTime = localtime(&now);
-		strftime(newgood->g_time, 20, "[%H:%M:%S]", tempTime);
+		strftime(newgood->g_time, 80, "[%Y-%m-%d-%H:%M:%S]", tempTime);
 	}
 	else
 	{
@@ -2224,16 +2323,6 @@ void Auction_group::Cout_Message()
 		//if (strcmp(p->good_id, "0") == 0) {
 		cout << p->nowtime << "\t" << "from user--" << p->name << "(goup-sent):\n";
 		cout << p->content << endl;
-	}
-}
-void Auction_group::Sort_bid(Message*q)
-{
-	Message* p = new Message;
-	sort = new Message;
-	p = q;
-	while (p->next != NULL)
-	{
-
 	}
 }
 
